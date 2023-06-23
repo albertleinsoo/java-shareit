@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.EmailExistsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.UserExistsException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -42,7 +43,7 @@ public class UserService {
         UserDto updatedUser = getUserById(id);
         String updatedEmail = userDto.getEmail();
         if (userRepository.allEmails().contains(updatedEmail)) {
-            throw new EmailExistsException("User with this id- {} and with email- {} is not found and cannot be updated");
+            throw new UserExistsException("User with this id- {} and with email- {} is not found and cannot be updated");
         }
         if (updatedEmail != null && !updatedEmail.isBlank()) {
             String oldEmail = updatedUser.getEmail();

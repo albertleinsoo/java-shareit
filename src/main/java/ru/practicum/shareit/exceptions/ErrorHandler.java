@@ -11,25 +11,31 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleUserNotFoundException(final NotFoundException e) {
+    public String handleNotFoundException(final NotFoundException e) {
+        log.info("404: {}", e.getMessage());
         return e.getMessage();
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({UserExistsException.class,
+            EmailExistsException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public String handleItemNotFoundException(final EmailExistsException e) {
+    public String handleExistsException(final RuntimeException e) {
+        log.debug("409: {}", e.getMessage());
         return e.getMessage();
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handleValidationException(final ValidationException e) {
+        log.debug("400: {}", e.getMessage());
         return e.getMessage();
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String handleUserAlreadyExistException(final Throwable e) {
+    public String handleRuntimeException(final RuntimeException e) {
+        log.debug("500: {}", e.getMessage());
         return e.getMessage();
     }
+
 }
