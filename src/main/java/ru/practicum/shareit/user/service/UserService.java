@@ -1,24 +1,25 @@
 package ru.practicum.shareit.user.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.EmailExistsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.UserExistsException;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
-    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public UserDto getUserById(Integer id) {
         return UserMapper.toUserDto(userRepository.getUserById(id)
@@ -32,9 +33,6 @@ public class UserService {
     }
 
     public UserDto create(UserDto userDto) {
-        if (userRepository.allEmails().contains(userDto.getEmail())) {
-            throw new EmailExistsException("This email- {}, has been used and cannot be created");
-        }
         User user = UserMapper.toUser(userDto);
         return UserMapper.toUserDto(userRepository.create(user));
     }
@@ -58,7 +56,7 @@ public class UserService {
     }
 
     public void delete(Integer id) {
-        userRepository.delete(UserMapper.toUser(getUserById(id)));
+        userRepository.delete(id);
     }
 
 }

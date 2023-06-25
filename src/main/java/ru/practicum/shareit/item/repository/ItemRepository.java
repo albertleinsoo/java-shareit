@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.repository;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,10 +32,11 @@ public class ItemRepository {
     }
 
     public Set<Item> searchItemByQuery(String query) {
+        String queryLower = query.toLowerCase();
         return itemsMap.values().stream()
                 .filter(Item::getAvailable)
-                .filter(item -> (item.getName().toLowerCase().contains(query.toLowerCase())
-                        || item.getDescription().toLowerCase().contains(query.toLowerCase())))
+                .filter(item -> (item.getName().toLowerCase().contains(queryLower)
+                        || item.getDescription().toLowerCase().contains(queryLower)))
                 .collect(Collectors.toSet());
     }
 

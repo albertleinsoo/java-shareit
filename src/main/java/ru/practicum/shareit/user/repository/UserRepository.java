@@ -1,7 +1,9 @@
 package ru.practicum.shareit.user.repository;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.exceptions.EmailExistsException;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.user.User;
 
 import java.util.*;
 
@@ -20,6 +22,9 @@ public class UserRepository {
     }
 
     public User create(User user) {
+        if (allEmails().contains(user.getEmail())) {
+            throw new EmailExistsException("This email- {}, has been used and cannot be created");
+        }
         emails.add(user.getEmail());
         user.setId(++id);
         usersMap.put(user.getId(), user);
@@ -31,7 +36,9 @@ public class UserRepository {
         return user;
     }
 
-    public void delete(User user) {
+    public void delete(Integer id) {
+        User user = getUserById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("User with this id %d not found", id)));
         emails.remove(user.getEmail());
         usersMap.remove(user.getId());
     }

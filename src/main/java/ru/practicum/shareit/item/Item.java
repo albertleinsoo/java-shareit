@@ -1,11 +1,9 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.user.model.User;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import ru.practicum.shareit.user.User;
 
 @Data
 @NoArgsConstructor
@@ -13,16 +11,10 @@ import javax.validation.constraints.NotNull;
 public class Item {
     private Integer id;
 
-    @NotNull
-    @NotBlank
     private String name;
 
-    @NotNull
-    @NotBlank
     private String description;
 
-    @NotBlank
-    @NotNull
     private Boolean available;
 
     private User owner;

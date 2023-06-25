@@ -1,29 +1,32 @@
 package ru.practicum.shareit.item.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    @Autowired
     private ItemRepository itemRepository;
+
+    private UserRepository userRepository;
+
     @Autowired
-    private UserService userService;
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
+        this.itemRepository = itemRepository;
+       // this.userService = userService;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public ItemDto getItemById(Integer id) {
@@ -55,9 +58,10 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() == null) {
             throw new ValidationException("available is empty");
         }
-        UserDto userDto = userService.getUserById(id);
+        User user = userRepository.getUserById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("User with this id %d not found", id)));
         Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(UserMapper.toUser(userDto));
+        item.setOwner(user);
         return ItemMapper.toItemDto(itemRepository.create(item));
     }
 
@@ -76,18 +80,22 @@ public class ItemServiceImpl implements ItemService {
         if (item.getAvailable() != null) {
             updatedItem.setAvailable(item.getAvailable());
         }
-        if (userService.getUserById(userId) != null && !updatedItem.getOwner().getId().equals(userId)) {
+
+        if (!updatedItem.getOwner().getId().equals(userId)) {
             throw new NotFoundException("item not found");
         }
         return ItemMapper.toItemDto(itemRepository.update(updatedItem, itemId));
     }
 
     @Override
-    public Set<Item> searchItemByQuery(String query) {
+    public Set<ItemDto> searchItemByQuery(String query) {
         if (query.isEmpty()) {
             return new HashSet<>();
         }
-        return itemRepository.searchItemByQuery(query);
+
+        return itemRepository.searchItemByQuery(query).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toSet());
     }
 
 }
