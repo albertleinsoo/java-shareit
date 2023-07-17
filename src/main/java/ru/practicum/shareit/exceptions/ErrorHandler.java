@@ -17,7 +17,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({UserExistsException.class,
-            EmailExistsException.class})
+            ExistException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public String handleExistsException(final RuntimeException e) {
         log.debug("409: {}", e.getMessage());
