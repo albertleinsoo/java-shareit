@@ -1,6 +1,9 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -21,7 +24,7 @@ public class User {
     private String name;
 
     @Email
-    @Column(name = "email",unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
 }

@@ -1,50 +1,44 @@
 package ru.practicum.shareit.user.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
-
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.List;
-import java.util.Set;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(path = "/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
-    @GetMapping(value = "/{userId}")
-    public UserDto getUserById(@PathVariable Integer userId) {
-        return userService.getUserById(userId);
-    }
-
-    @GetMapping
-    public List<UserDto> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
     @PostMapping
-    public UserDto create(@RequestBody @Valid UserDto userDto) {
-        return userService.create(userDto);
+    public ResponseEntity<UserDto> add(@Valid @RequestBody UserDto userDto) {
+        return ResponseEntity.ok().body(userService.add(userDto));
     }
 
     @PatchMapping("/{id}")
-    public UserDto update(@RequestBody UserDto userDto, @PathVariable Integer id) {
-        return userService.update(userDto,id);
+    public ResponseEntity<UserDto> update(@PathVariable @Positive int id, @Valid @RequestBody UserDto userDto) {
+        return ResponseEntity.ok().body(userService.update(id, userDto));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> get(@PathVariable @Positive int id) {
+        return ResponseEntity.ok().body(userService.get(id));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
+    public void delete(@PathVariable @Positive int id) {
         userService.delete(id);
     }
 
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAll() {
+        return ResponseEntity.ok().body(userService.getAll());
+    }
 }

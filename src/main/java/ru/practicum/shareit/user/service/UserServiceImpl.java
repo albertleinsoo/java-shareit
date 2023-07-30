@@ -1,76 +1,85 @@
 package ru.practicum.shareit.user.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.ExistException;
-import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.exceptions.UserExistsException;
-import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.exceptions.DtoIntegrityException;
+import ru.practicum.shareit.exceptions.ObjectNotFoundException;
+import ru.practicum.shareit.exceptions.UserEmailAlreadyExistsException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class UserServiceImpl implements UserService{
-    private UserRepository userRepository;
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+    private final UserMapper userMapper;
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    private final UserRepository userRepository;
+
+    public UserDto add(@Valid UserDto userDto) {
+        validateUserDto(userDto);
+        User user = userMapper.toUser(userDto);
+        user = userRepository.save(user);
+        return userMapper.toUserDto(user);
     }
 
-    @Override
-    public UserDto getUserById(Integer id) {
-        return UserMapper.toUserDto(userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("User with this id %d not found", id))));
-    }
+    public UserDto update(int userId, @Valid UserDto userDto) {
+        validateUserById(userId);
 
-    @Override
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
-    }
+        User user = userRepository.findById(userId).get();
 
-    @Override
-    public UserDto create(UserDto userDto) {
-        if (userDto.getEmail() != null && userDto.getEmail().contains("@")) {
-            try {
-                User createdUser = userRepository.save(UserMapper.toUser(userDto));
-                return UserMapper.toUserDto(createdUser);
-            } catch (ExistException e) {
-                throw new ExistException("User with email exists");
+        if (userDto.getEmail() != null) {
+            if (!Objects.equals(userDto.getEmail(), user.getEmail()) && userWithEmailExists(userDto.getEmail())) {
+                throw new UserEmailAlreadyExistsException("Failed to update user. User with email " + userDto.getEmail() + " doesn't exist.");
             }
-        } else {
-            throw new ValidationException("Email not found");
+            user.setEmail(userDto.getEmail());
         }
+
+        if (userDto.getName() != null) {
+            user.setName(userDto.getName());
+        }
+
+        user = userRepository.save(user);
+
+        return userMapper.toUserDto(user);
     }
 
-    @Override
-    public UserDto update(UserDto userDto, Integer id) {
-        User updatedUser = UserMapper.toUser(getUserById(id));
-        String updatedEmail = userDto.getEmail();
-        if (userRepository.getUserByEmail(updatedEmail).isPresent()) {
-            throw new ExistException("User with this id- {} and with email- {} is not found and cannot be updated");
-        }
-        if (updatedEmail != null && !updatedEmail.isBlank()) {
-            updatedUser.setEmail(updatedEmail);
-        }
-        String updatedName = userDto.getName();
-        if (updatedName != null && !updatedName.isBlank()) {
-            updatedUser.setName(updatedName);
-        }
-        userRepository.save(updatedUser);
-        return UserMapper.toUserDto(updatedUser);
+    public UserDto get(int id) {
+        validateUserById(id);
+        Optional<User> user = userRepository.findById(id);
+        return user.map(userMapper::toUserDto).orElse(null);
     }
 
-    @Override
-    public void delete(Integer id) {
+    public void delete(int id) {
+        validateUserById(id);
         userRepository.deleteById(id);
     }
 
+    public List<UserDto> getAll() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(userMapper::toUserDto).collect(Collectors.toList());
+    }
+
+    private void validateUserDto(UserDto userDto) {
+        if (userDto.getName() == null || userDto.getEmail() == null) {
+            throw new DtoIntegrityException("Failed to process request. Item's name, description or isAvailable status must not be null.");
+        }
+    }
+
+    private void validateUserById(Integer userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ObjectNotFoundException("Failed to process request. User with id = " + userId + " doesn't exist.");
+        }
+    }
+
+    private boolean userWithEmailExists(String email) {
+        return userRepository.findAll().stream().map(User::getEmail).anyMatch(email::equals);
+    }
 }
