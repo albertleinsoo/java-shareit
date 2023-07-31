@@ -24,8 +24,8 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Comment text must not be null.")
-    @NotBlank(message = "Comment must not be empty.")
+    @NotNull(message = "Текст комментария не может быть null.")
+    @NotBlank(message = "Текст комментария не может быть пустым.")
     @Length(max = 500)
     private String text;
 

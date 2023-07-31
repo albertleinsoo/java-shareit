@@ -21,16 +21,16 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Item name can't be null.")
+    @NotNull(message = "Название предмета не может быть пустым.")
     @Length(max = 255)
     private String name;
 
-    @NotNull(message = "Item description can't be null.")
+    @NotNull(message = "Описание предмета не может быть пустым.")
     @Length(max = 512)
     private String description;
 
     @Column(name = "is_available")
-    @NotNull(message = "Item status can't be null.")
+    @NotNull(message = "Статус предмета не может быть пустым.")
     private Boolean available;
 
     @ManyToOne

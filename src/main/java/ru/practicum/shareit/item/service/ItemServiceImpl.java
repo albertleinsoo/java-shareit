@@ -3,10 +3,10 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.comment.dto.CommentOutputDto;
 import ru.practicum.shareit.comment.mapper.CommentMapper;
 import ru.practicum.shareit.comment.model.Comment;
@@ -154,7 +154,7 @@ public class ItemServiceImpl implements ItemService {
 
         Optional<Item> optionalItem = itemRepository.findById(itemId);
         if ((optionalItem.isEmpty())) {
-            throw new ObjectNotFoundException("Booking with id = " + itemId + " was not found.");
+            throw new ObjectNotFoundException("Booking с id = " + itemId + " Не найден.");
         }
         Item item = optionalItem.get();
 
@@ -162,11 +162,11 @@ public class ItemServiceImpl implements ItemService {
 
         List<Booking> bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, LocalDateTime.now(), sort);
         if (bookings.isEmpty()) {
-            throw new UnavailableItemBookingException("Failed to add comment. No finished bookings found.");
+            throw new UnavailableItemBookingException("Ошибка добавления комментария. Нет завершённых бронирований.");
         }
 
         if (item.getOwner().getId().equals(userId)) {
-            throw new IllegalItemBookingException("Failed to add comment. Item owners are not allowed to comment on the booking of their items.");
+            throw new IllegalItemBookingException("Ошибка добавления комментария. Владельцы не могут комментировать свой предмет.");
         }
 
         commentInput.setItem(item);
@@ -193,19 +193,19 @@ public class ItemServiceImpl implements ItemService {
     private void validateItemDto(ItemDto itemDto) {
         if (itemDto.getAvailable() == null || itemDto.getName() == null || itemDto.getName().isEmpty()
                 || itemDto.getDescription() == null) {
-            throw new DtoIntegrityException("Failed to process request. Item's name, description or isAvailable status must not be null.");
+            throw new DtoIntegrityException("Ошибка запроса бронирования. Название предмета, описание или статус не должны быть null.");
         }
     }
 
     private void validateUser(Integer userId) {
         if (!userRepository.existsById(userId)) {
-            throw new ObjectNotFoundException("Failed to process request. User with id = " + userId + " doesn't exist.");
+            throw new ObjectNotFoundException("Ошибка запроса бронирования. Пользователь с id = " + userId + " не существует.");
         }
     }
 
     private void validateItem(Integer itemId) {
         if (!itemRepository.existsById(itemId)) {
-            throw new ObjectNotFoundException("Failed to process request. Item with id = " + itemId + " doesn't exist.");
+            throw new ObjectNotFoundException("Ошибка запроса бронирования. Предмет с id = " + itemId + " не существует.");
         }
     }
 }

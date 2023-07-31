@@ -16,36 +16,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookingController {
 
+    private final static String OWNER = "X-Sharer-User-Id";
     private final BookingService bookingService;
 
     @PostMapping
-    public ResponseEntity<BookingDtoOutput> add(@RequestHeader("X-Sharer-User-Id") @NotNull Integer userId,
+    public ResponseEntity<BookingDtoOutput> add(@RequestHeader(OWNER) @NotNull Integer userId,
                                                 @Valid @RequestBody BookingDtoInput bookingDtoInput) {
         return ResponseEntity.ok().body(bookingService.add(userId, bookingDtoInput));
     }
 
     @PatchMapping("/{bookingId}")
     public ResponseEntity<BookingDtoOutput> setApprove(@PathVariable @NotNull Integer bookingId,
-                                                       @RequestHeader("X-Sharer-User-Id") @NotNull Integer ownerId,
+                                                       @RequestHeader(OWNER) @NotNull Integer ownerId,
                                                        @RequestParam("approved") @NotNull Boolean isApproved) {
         return ResponseEntity.ok().body(bookingService.setApprove(bookingId, ownerId, isApproved));
     }
 
     @GetMapping("/{bookingId}")
     public ResponseEntity<BookingDtoOutput> get(@PathVariable @NotNull Integer bookingId,
-                                                @RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
+                                                @RequestHeader(OWNER) @NotNull Integer userId) {
         return ResponseEntity.ok().body(bookingService.get(bookingId, userId));
     }
 
     @GetMapping
     public ResponseEntity<List<BookingDtoOutput>> getAll(@RequestParam(name = "state", defaultValue = "ALL", required = false) String searchMode,
-                                                         @RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
+                                                         @RequestHeader(OWNER) @NotNull Integer userId) {
         return ResponseEntity.ok().body(bookingService.getAll(searchMode, userId));
     }
 
     @GetMapping("/owner")
     public ResponseEntity<List<BookingDtoOutput>> getAllByOwner(@RequestParam(name = "state", defaultValue = "ALL", required = false) String searchMode,
-                                                                @RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
+                                                                @RequestHeader(OWNER) @NotNull Integer userId) {
         return ResponseEntity.ok().body(bookingService.getAllByOwner(searchMode, userId));
     }
 }

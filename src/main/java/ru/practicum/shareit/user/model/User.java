@@ -29,6 +29,6 @@ public class User {
     @NotNull(message = "Email пользователя не может быть null.")
     @NotEmpty(message = "Email пользователя не может быть пустым.")
     @Email
-    @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Incorrect email format.")
+    @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Неверный формат email.")
     private String email;
 }
