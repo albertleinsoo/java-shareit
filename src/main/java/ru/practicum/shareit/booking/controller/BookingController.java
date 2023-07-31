@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookingController {
 
-    private final static String OWNER = "X-Sharer-User-Id";
+    private static final String OWNER = "X-Sharer-User-Id";
     private final BookingService bookingService;
 
     @PostMapping
