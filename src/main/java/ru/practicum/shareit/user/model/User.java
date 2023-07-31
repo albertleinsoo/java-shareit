@@ -1,30 +1,34 @@
 package ru.practicum.shareit.user.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
+import javax.validation.constraints.*;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "users")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
     @Id
+    @Positive
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "name", nullable = false)
+    @NotNull(message = "Имя пользователя не может быть null.")
+    @NotEmpty(message = "Имя пользователя не может быть пустым.")
+    @NotBlank(message = "Имя пользователя не может быть пустой строкой.")
+    @Length(max = 255)
     private String name;
 
+    @Column(name = "email", length = 50, nullable = false, unique = true)
+    @NotNull(message = "Email пользователя не может быть null.")
+    @NotEmpty(message = "Email пользователя не может быть пустым.")
     @Email
-    @Column(name = "email", unique = true, nullable = false)
+    @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Incorrect email format.")
     private String email;
-
 }

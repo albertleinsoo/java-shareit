@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
         if (userDto.getEmail() != null) {
             if (!Objects.equals(userDto.getEmail(), user.getEmail()) && userWithEmailExists(userDto.getEmail())) {
-                throw new UserEmailAlreadyExistsException("Failed to update user. User with email " + userDto.getEmail() + " doesn't exist.");
+                throw new UserEmailAlreadyExistsException("Ошибка обновления пользователя. Пользователь с email: " + userDto.getEmail() + " не существует.");
             }
             user.setEmail(userDto.getEmail());
         }
@@ -69,13 +69,13 @@ public class UserServiceImpl implements UserService {
 
     private void validateUserDto(UserDto userDto) {
         if (userDto.getName() == null || userDto.getEmail() == null) {
-            throw new DtoIntegrityException("Failed to process request. Item's name, description or isAvailable status must not be null.");
+            throw new DtoIntegrityException("Ошибка. Имя и email пользователя не должны быть null.");
         }
     }
 
     private void validateUserById(Integer userId) {
         if (!userRepository.existsById(userId)) {
-            throw new ObjectNotFoundException("Failed to process request. User with id = " + userId + " doesn't exist.");
+            throw new ObjectNotFoundException("Ошибка. Пользователь с id = " + userId + " не существует.");
         }
     }
 

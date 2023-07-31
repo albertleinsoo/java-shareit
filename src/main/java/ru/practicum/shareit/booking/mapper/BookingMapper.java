@@ -1,42 +1,22 @@
 package ru.practicum.shareit.booking.mapper;
 
-import ru.practicum.shareit.booking.dto.BookingDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.factory.Mappers;
+import ru.practicum.shareit.booking.dto.BookingDtoInput;
+import ru.practicum.shareit.booking.dto.BookingDtoOutput;
+import ru.practicum.shareit.booking.dto.BookingDtoShortOutput;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
-public class BookingMapper {
-    public static BookingDto toBookingDto(Booking booking) {
-        BookingDto.Item item = new BookingDto.Item();
-        BookingDto.User booker = new BookingDto.User();
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface BookingMapper {
+    BookingMapper INSTANCE = Mappers.getMapper(BookingMapper.class);
 
-        if (booking.getItem() != null) {
-            item.setId(booking.getItem().getId());
-            item.setName(booking.getItem().getName());
-        }
+    Booking toBooking(BookingDtoInput bookingDtoInput);
 
-        if (booking.getBooker() != null) {
-            booker.setId(booking.getBooker().getId());
+    BookingDtoOutput toBookingDtoOutput(Booking booking);
 
-        }
-        return BookingDto.builder()
-                .id(booking.getId())
-                .itemId(booking.getItem().getId())
-                .start(booking.getStart())
-                .end(booking.getEnd())
-                .item(item)
-                .booker(booker)
-                .status(booking.getStatus())
-                .build();
-    }
-
-    public static Booking toBooking(User booker, Item item, BookingDto bookingDto) {
-        return Booking.builder()
-                .id(bookingDto.getId())
-                .start(bookingDto.getStart())
-                .end(bookingDto.getEnd())
-                .booker(booker)
-                .item(item)
-                .build();
-    }
+    @Mapping(target = "bookerId", source = "booking.booker.id")
+    BookingDtoShortOutput toBookingDtoShortOutput(Booking booking);
 }

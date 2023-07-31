@@ -1,58 +1,65 @@
 package ru.practicum.shareit.item.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.comment.dto.CommentDto;
+import ru.practicum.shareit.comment.dto.CommentOutputDto;
+import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.ItemDtoExtended;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/items")
+@RequiredArgsConstructor
 public class ItemController {
-    private static final String OWNER = "X-Sharer-User-Id";
 
-    private ItemService itemService;
+    private final static String OWNER = "X-Sharer-User-Id";
+    private final ItemService itemService;
 
-    @Autowired
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
+    @PostMapping
+    public ResponseEntity<ItemDto> add(@RequestHeader(OWNER) @NotNull Integer userId, @Valid @RequestBody ItemDto itemDto) {
+        return ResponseEntity.ok().body(itemService.add(userId, itemDto));
     }
 
-    @GetMapping(value = "/{id}")
-    public ItemDtoWithBooking getItemById(@RequestHeader(OWNER) Integer userId,
-                                          @PathVariable Integer id) {
-        return itemService.getItemById(userId, id);
+    @PatchMapping("/{itemId}")
+    public ResponseEntity<ItemDto> update(@PathVariable @Positive Integer itemId,
+                                          @RequestHeader(OWNER) @NotNull Integer userId,
+                                          @Valid @RequestBody ItemDto itemDto) {
+        return ResponseEntity.ok().body(itemService.update(itemId, userId, itemDto));
+    }
+
+    @GetMapping("/{itemId}")
+    public ResponseEntity<ItemDto> get(@PathVariable @NotNull @Positive Integer itemId,
+                                       @RequestHeader(OWNER) @NotNull Integer userId) {
+        return ResponseEntity.ok().body(itemService.get(itemId, userId));
     }
 
     @GetMapping
-    public List<ItemDtoWithBooking> getAllItems(@RequestHeader(OWNER) Integer ownerId) {
-        return itemService.getAllItems(ownerId);
+    public ResponseEntity<List<ItemDtoExtended>> getAll(@RequestHeader(OWNER) @NotNull Integer userId) {
+        return ResponseEntity.ok().body(itemService.getAll(userId));
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItemByQuery(@RequestParam(name = "text") String query) {
-        return itemService.searchItemByQuery(query);
-    }
-
-    @PostMapping
-    public ItemDto create(@RequestHeader(OWNER) Integer userId, @RequestBody ItemDto itemDto) {
-        return itemService.create(userId,itemDto);
+    public ResponseEntity<List<ItemDto>> search(@RequestHeader(OWNER) @NotNull Integer userId, @RequestParam("text") String text) {
+        return ResponseEntity.ok().body(itemService.search(userId, text));
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentDto addComment(@RequestHeader(OWNER) Integer userId,
-                                 @PathVariable Integer itemId, @RequestBody CommentDto commentDto) {
-        return itemService.addComment(userId, itemId, commentDto);
+    public ResponseEntity<CommentOutputDto> addComment(@PathVariable @NotNull Integer itemId,
+                                                       @RequestHeader(OWNER) @NotNull Integer userId,
+                                                       @Valid @RequestBody Comment comment) {
+        return ResponseEntity.ok().body(itemService.addComment(itemId, userId, comment));
     }
 
-    @PatchMapping("/{id}")
-    public ItemDto update(@RequestHeader(OWNER) Integer userId,
-                          @RequestBody ItemDto itemDto, @PathVariable Integer id) {
-        return itemService.update(userId,itemDto,id);
+    @GetMapping("/{itemId}/comment")
+    public ResponseEntity<ItemDtoExtended> getItemWithComments(@PathVariable @NotNull Integer itemId,
+                                                               @RequestHeader(OWNER) @NotNull Integer userId) {
+        return ResponseEntity.ok().body(itemService.getItemWithComments(itemId, userId));
     }
 }

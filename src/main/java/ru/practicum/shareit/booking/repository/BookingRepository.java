@@ -1,51 +1,37 @@
-package ru.practicum.shareit.booking.repository;
+package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import ru.practicum.shareit.booking.enums.Status;
+import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
+    List<Booking> findByBooker_Id(Integer bookerId, Sort sort);
 
-    List<Booking> getAllByItemOwnerIdOrderByStartDesc(Integer userId);
+    List<Booking> findByBooker_IdAndStartIsAfter(Integer bookerId, LocalDateTime currentDateTime, Sort sort);
 
-    List<Booking> getAllByBookerIdOrderByStartDesc(Integer userId);
+    List<Booking> findByBooker_IdAndEndIsBefore(Integer bookerId, LocalDateTime currentDateTime, Sort sort);
 
-    Booking getFirstByItemIdAndEndBeforeOrderByEndDesc(Integer itemId, LocalDateTime end);
+    List<Booking> findByBooker_IdAndStatus(Integer userId, BookingStatus bookingStatus, Sort sort);
 
-    Booking getTopByItemIdAndStartAfterOrderByStartAsc(Integer itemId, LocalDateTime start);
+    List<Booking> findByBooker_IdAndStartIsBeforeAndEndIsAfter(Integer bookerId, LocalDateTime currentDateTime, LocalDateTime currentTime, Sort sort);
 
-    List<Booking> getByBookerIdAndStatus(Integer bookerId, Status status);
+    List<Booking> findByItemOwnerId(Integer userId, Sort sort);
 
-    List<Booking> getAllByItemOwnerIdAndStatus(Integer ownerId, Status status);
+    List<Booking> findByItemOwnerIdAndStartIsAfter(Integer itemOwnerId, LocalDateTime currentDateTime, Sort sort);
 
-    @Query("SELECT b FROM Booking b " +
-            "WHERE b.booker.id = :id AND b.end < :currentTime AND upper(b.status) = UPPER('APPROVED')" +
-            "ORDER BY b.start DESC")
-    List<Booking> getByBookerIdStatePast(@Param("id") int id, @Param("currentTime") LocalDateTime currentTime);
+    List<Booking> findByItemOwnerIdAndEndIsBefore(Integer itemOwnerId, LocalDateTime currentDateTime, Sort sort);
 
-    @Query("SELECT b FROM Booking b WHERE b.booker.id = :userId AND b.end >= :currentTime AND :currentTime >= b.start " +
-            "ORDER BY b.start DESC")
-    List<Booking> getByBookerIdStateCurrent(@Param("userId") int userId, @Param("currentTime") LocalDateTime currentTime);
+    List<Booking> findByItemOwnerIdAndStatus(Integer itemOwnerId, BookingStatus bookingStatus, Sort sort);
 
-    @Query("SELECT b FROM Booking b WHERE b.booker.id = :userId AND b.start > :currentTime ORDER BY b.start DESC")
-    List<Booking> getFuture(@Param("userId") int userId, @Param("currentTime") LocalDateTime currentTime);
+    List<Booking> findByItemOwnerIdAndStartIsBeforeAndEndIsAfter(Integer itemOwnerId, LocalDateTime currentDateTime, LocalDateTime currentTime, Sort sort);
 
-    @Query("SELECT b FROM Booking b JOIN b.item i ON b.item = i WHERE i.owner.id = :ownerId ORDER BY b.start DESC")
-    List<Booking> getOwnerAll(int ownerId);
+    List<Booking> findByItemIdAndStartIsAfterAndStatusNot(Integer itemId, LocalDateTime currentDateTime, BookingStatus status, Sort sort);
 
-    @Query("SELECT b FROM Booking b JOIN b.item i ON b.item = i WHERE  i.owner.id = :userId AND b.start > :currentTime " +
-            "ORDER BY b.start DESC")
-    List<Booking> getOwnerFuture(@Param("userId") int userId, @Param("currentTime") LocalDateTime currentTime);
-
-    @Query("SELECT b FROM Booking b JOIN b.item i ON b.item = i WHERE i.owner.id = :userId " +
-            "AND b.start <= :currentTime AND b.end >= :currentTime ORDER BY b.start DESC ")
-    List<Booking> getOwnerCurrent(@Param("userId") int userId, @Param("currentTime") LocalDateTime currentTime);
-
-    @Query("SELECT b FROM Booking b JOIN b.item i ON b.item = i WHERE i.owner.id = :userId AND b.end < :currentTime")
-    List<Booking> getOwnerPast(@Param("userId") int userId, @Param("currentTime") LocalDateTime currentTime);
+    List<Booking> findByItemIdAndStartIsBeforeAndStatusNot(Integer itemId, LocalDateTime currentDateTime, BookingStatus status, Sort sort);
 }

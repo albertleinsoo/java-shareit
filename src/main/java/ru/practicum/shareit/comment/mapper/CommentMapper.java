@@ -1,29 +1,21 @@
 package ru.practicum.shareit.comment.mapper;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.factory.Mappers;
 import ru.practicum.shareit.comment.dto.CommentDto;
+import ru.practicum.shareit.comment.dto.CommentOutputDto;
 import ru.practicum.shareit.comment.model.Comment;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
-@Component
-public class CommentMapper {
-    public static CommentDto toCommentDto(Comment comment) {
-        return new CommentDto(
-                comment.getId(),
-                comment.getText(),
-                comment.getUser().getName(),
-                comment.getCreated()
-        );
-    }
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface CommentMapper {
+    CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
 
-    public static Comment toComment(CommentDto commentDto, Item item, User user) {
-        return Comment.builder()
-                .id(commentDto.getId())
-                .text(commentDto.getText())
-                .item(item)
-                .user(user)
-                .created(commentDto.getCreated())
-                .build();
-    }
+    CommentDto toCommentDto(Comment comment);
+
+    Comment toComment(CommentDto commentDto);
+
+    @Mapping(target = "authorName", source = "comment.author.name")
+    CommentOutputDto toCommentOutputDto(Comment comment);
 }
