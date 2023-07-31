@@ -12,4 +12,3 @@ public class ItemRequestDto {
     private UserDto requestingUser;
     private LocalDateTime created;
 }
-
