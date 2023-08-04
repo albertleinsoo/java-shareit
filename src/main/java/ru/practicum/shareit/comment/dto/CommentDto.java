@@ -16,5 +16,5 @@ public class CommentDto {
     private String text;
     private Item item;
     private User author;
-    LocalDateTime created = LocalDateTime.now();
+    private LocalDateTime created = LocalDateTime.now();
 }

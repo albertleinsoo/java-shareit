@@ -52,10 +52,6 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto update(Integer itemId, Integer userId, ItemDto itemDto) {
         validateItem(itemId);
 
-        if (itemId.equals(itemDto.getId())) {
-            validateUser(userId);
-        }
-
         Item item = itemRepository.findById(itemId).get();
 
         if (!Objects.equals(userId, item.getOwner().getId())) {
@@ -93,15 +89,15 @@ public class ItemServiceImpl implements ItemService {
         ItemDtoExtended itemDtoExtended = new ItemDtoExtended(itemDto, itemComments);
 
         if (Objects.equals(userId, item.getOwner().getId())) {
-            List<Booking> last = bookingRepository.findByItemIdAndStartIsBeforeAndStatusNot(itemId, LocalDateTime.now(), BookingStatus.REJECTED, sort);
-            if (!last.isEmpty()) {
-                Booking lastBooking = last.get(0);
+            Booking last = bookingRepository.findFirst1ByItemIdAndStartIsBeforeAndStatusNot(itemId, LocalDateTime.now(), BookingStatus.REJECTED, sort);
+            if (last != null) {
+                Booking lastBooking = last;
                 itemDtoExtended.setLastBooking(bookingMapper.toBookingDtoShortOutput(lastBooking));
             }
 
-            List<Booking> next = bookingRepository.findByItemIdAndStartIsAfterAndStatusNot(itemId, LocalDateTime.now(), BookingStatus.REJECTED, sort.ascending());
-            if (!next.isEmpty()) {
-                Booking nextBooking = next.get(0);
+            Booking next = bookingRepository.findFirst1ByItemIdAndStartIsAfterAndStatusNot(itemId, LocalDateTime.now(), BookingStatus.REJECTED, sort.ascending());
+            if (next != null) {
+                Booking nextBooking = next;
                 itemDtoExtended.setNextBooking(bookingMapper.toBookingDtoShortOutput(nextBooking));
             }
         }
@@ -116,15 +112,15 @@ public class ItemServiceImpl implements ItemService {
                 .map(itemMapper::toItemDto)
                 .map(itemDto -> new ItemDtoExtended(itemDto, null))
                 .map(item -> {
-                    List<Booking> last = bookingRepository.findByItemIdAndStartIsBeforeAndStatusNot(item.getId(), LocalDateTime.now(), BookingStatus.REJECTED, sort);
-                    if (!last.isEmpty()) {
-                        Booking lastBooking = last.get(0);
+                    Booking last = bookingRepository.findFirst1ByItemIdAndStartIsBeforeAndStatusNot(item.getId(), LocalDateTime.now(), BookingStatus.REJECTED, sort);
+                    if (last != null) {
+                        Booking lastBooking = last;
                         item.setLastBooking(bookingMapper.toBookingDtoShortOutput(lastBooking));
                     }
 
-                    List<Booking> next = bookingRepository.findByItemIdAndStartIsAfterAndStatusNot(item.getId(), LocalDateTime.now(), BookingStatus.REJECTED, sort.ascending());
-                    if (!next.isEmpty()) {
-                        Booking nextBooking = next.get(0);
+                    Booking next = bookingRepository.findFirst1ByItemIdAndStartIsAfterAndStatusNot(item.getId(), LocalDateTime.now(), BookingStatus.REJECTED, sort.ascending());
+                    if (next != null) {
+                        Booking nextBooking = next;
                         item.setNextBooking(bookingMapper.toBookingDtoShortOutput(nextBooking));
                     }
                     return item;
@@ -138,6 +134,7 @@ public class ItemServiceImpl implements ItemService {
         if (text == null || text.isEmpty()) {
             return new ArrayList<>();
         }
+        //todo сделать запросом к базе, а не прохождением по списку вещей
         String searchQuery = text.toLowerCase();
         return itemRepository.findAll().stream()
                 .filter(Item::getAvailable)
@@ -150,7 +147,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentOutputDto addComment(Integer itemId, Integer userId, Comment commentInput) {
         validateUser(userId);
-        validateItem(itemId);
 
         Optional<Item> optionalItem = itemRepository.findById(itemId);
         if ((optionalItem.isEmpty())) {

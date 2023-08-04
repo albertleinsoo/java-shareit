@@ -31,7 +31,11 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto update(int userId, @Valid UserDto userDto) {
-        validateUserById(userId);
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if ((optionalUser.isEmpty())) {
+            throw new ObjectNotFoundException("User с id = " + userId + " Не найден.");
+        }
 
         User user = userRepository.findById(userId).get();
 
@@ -52,8 +56,11 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto get(int id) {
-        validateUserById(id);
         Optional<User> user = userRepository.findById(id);
+        if ((user.isEmpty())) {
+            throw new ObjectNotFoundException("User с id = " + id + " Не найден.");
+        }
+
         return user.map(userMapper::toUserDto).orElse(null);
     }
 
@@ -83,3 +90,4 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll().stream().map(User::getEmail).anyMatch(email::equals);
     }
 }
+

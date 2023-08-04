@@ -33,14 +33,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDtoOutput add(Integer bookerId, BookingDtoInput bookingDtoInput) {
         validateBookingDtoInput(bookingDtoInput);
-        validateUser(bookerId);
-        validateItem(bookingDtoInput.getItemId());
 
-        Optional<Item> optionalItem = itemRepository.findById(bookingDtoInput.getItemId());
-        if (optionalItem.isEmpty()) {
-            throw new ObjectNotFoundException("Ошибка создания предмета.");
-        }
-        Item item = optionalItem.get();
+        Item item = itemRepository.findById(bookingDtoInput.getItemId())
+                .orElseThrow(() -> new ObjectNotFoundException("Ошибка создания предмета."));
 
         if (!item.getAvailable()) {
             throw new UnavailableItemBookingException("Ошибка создания бронирования. Недоступные предметы не могут быть забронированы.");
@@ -50,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         Booking booking = bookingMapper.toBooking(bookingDtoInput);
-        booking.setBooker(userRepository.findById(bookerId).get());
+        booking.setBooker(userRepository.findById(bookerId).orElseThrow(() -> new ObjectNotFoundException("Ошибка создания предмета.")));
         booking.setStatus(BookingStatus.WAITING);
         booking.setItem(item);
 
@@ -60,8 +55,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOutput setApprove(Integer bookingId, Integer userId, Boolean isApproved) {
-        validateBooking(bookingId);
-        validateUser(userId);
 
         Optional<Booking> optionalBooking = bookingRepository.findById(bookingId);
         if (optionalBooking.isEmpty()) {
@@ -91,8 +84,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOutput get(Integer bookingId, Integer userId) {
-        validateBooking(bookingId);
-        validateUser(userId);
 
         Optional<Booking> optionalBooking = bookingRepository.findById(bookingId);
         if (optionalBooking.isEmpty()) {
@@ -111,7 +102,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public List<BookingDtoOutput> getAll(String bookingSearchMode, Integer userId) {
-        validateUser(userId);
         Sort sort = Sort.by("start").descending();
 
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -159,7 +149,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public List<BookingDtoOutput> getAllByOwner(String bookingSearchMode, Integer userId) {
-        validateUser(userId);
         Sort sort = Sort.by("start").descending();
 
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -210,24 +199,6 @@ public class BookingServiceImpl implements BookingService {
             throw new DtoIntegrityException("Failed to process request. " +
                     "Booker id, item id, start and end time must not be empty. " +
                     "Start and end time must be correct.");
-        }
-    }
-
-    private void validateUser(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ObjectNotFoundException("Ошибка запроса бронирования. User с id = " + userId + " не существует.");
-        }
-    }
-
-    private void validateItem(Integer itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new ObjectNotFoundException("Ошибка запроса бронирования. Item с id = " + itemId + " не существует.");
-        }
-    }
-
-    private void validateBooking(Integer bookingId) {
-        if (!bookingRepository.existsById(bookingId)) {
-            throw new ObjectNotFoundException("Ошибка запроса бронирования. Booking с id = " + bookingId + " не существует.");
         }
     }
 }

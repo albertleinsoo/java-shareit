@@ -17,6 +17,7 @@ public class ItemDtoExtended extends ItemDto {
     private BookingDtoShortOutput lastBooking;
     private BookingDtoShortOutput nextBooking;
 
+
     public ItemDtoExtended(ItemDto itemDto, List<CommentOutputDto> comments) {
         super(itemDto.getId(), itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable());
         this.comments = comments;
