@@ -6,36 +6,58 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Map;
+
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleNotFoundException(final NotFoundException e) {
-        log.info("404: {}", e.getMessage());
-        return e.getMessage();
+
+    @ExceptionHandler(DtoIntegrityException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public Map<String, String> validationException(DtoIntegrityException exception) {
+        log.error(exception.getMessage());
+        return Map.of("error", exception.getMessage());
     }
 
-    @ExceptionHandler({UserExistsException.class,
-            EmailExistsException.class})
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public String handleExistsException(final RuntimeException e) {
-        log.debug("409: {}", e.getMessage());
-        return e.getMessage();
+    @ExceptionHandler(UserEmailAlreadyExistsException.class)
+    @ResponseStatus(value = HttpStatus.CONFLICT)
+    public Map<String, String> validationException(UserEmailAlreadyExistsException exception) {
+        log.error(exception.getMessage());
+        return Map.of("error", exception.getMessage());
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String handleValidationException(final ValidationException e) {
-        log.debug("400: {}", e.getMessage());
-        return e.getMessage();
+    @ExceptionHandler(ItemAccessException.class)
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public Map<String, String> validationException(ItemAccessException exception) {
+        log.error(exception.getMessage());
+        return Map.of("error", exception.getMessage());
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String handleRuntimeException(final RuntimeException e) {
-        log.debug("500: {}", e.getMessage());
-        return e.getMessage();
+    @ExceptionHandler(IllegalItemBookingException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public Map<String, String> validationException(IllegalItemBookingException exception) {
+        log.error(exception.getMessage());
+        return Map.of("error", exception.getMessage());
     }
 
+    @ExceptionHandler(UnavailableItemBookingException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public Map<String, String> validationException(UnavailableItemBookingException exception) {
+        log.error(exception.getMessage());
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(ObjectNotFoundException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public Map<String, String> validationException(ObjectNotFoundException exception) {
+        log.error(exception.getMessage());
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(IllegalSearchModeException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public Map<String, String> validationException(IllegalSearchModeException exception) {
+        log.error(exception.getMessage());
+        return Map.of("error", exception.getMessage());
+    }
 }

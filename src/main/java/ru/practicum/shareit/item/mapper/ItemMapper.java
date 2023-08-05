@@ -1,27 +1,16 @@
 package ru.practicum.shareit.item.mapper;
 
-import ru.practicum.shareit.item.Item;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.factory.Mappers;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Item;
 
-public class ItemMapper {
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface ItemMapper {
+    ItemMapper INSTANCE = Mappers.getMapper(ItemMapper.class);
 
-    public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getOwner()
-        );
-    }
+    ItemDto toItemDto(Item item);
 
-    public static Item toItem(ItemDto dto) {
-        return new Item(
-                dto.getId(),
-                dto.getName(),
-                dto.getDescription(),
-                dto.getAvailable(),
-                dto.getOwner()
-        );
-    }
+    Item toItem(ItemDto itemDto);
 }

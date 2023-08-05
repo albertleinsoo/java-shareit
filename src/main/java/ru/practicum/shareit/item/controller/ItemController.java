@@ -1,48 +1,64 @@
 package ru.practicum.shareit.item.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.comment.dto.CommentOutputDto;
+import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoExtended;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
-import java.util.Set;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import java.util.List;
 
 @RestController
 @RequestMapping("/items")
+@RequiredArgsConstructor
 public class ItemController {
+
     private static final String OWNER = "X-Sharer-User-Id";
+    private final ItemService itemService;
 
-    private ItemService itemService;
-
-    @Autowired
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
+    @PostMapping
+    public ItemDto add(@RequestHeader(OWNER) @NotNull Integer userId, @Valid @RequestBody ItemDto itemDto) {
+        return itemService.add(userId, itemDto);
     }
 
-    @GetMapping(value = "/{id}")
-    public ItemDto getItemById(@PathVariable Integer id) {
-        return itemService.getItemById(id);
+    @PatchMapping("/{itemId}")
+    public ItemDto update(@PathVariable @Positive Integer itemId,
+                                          @RequestHeader(OWNER) @NotNull Integer userId,
+                                          @Valid @RequestBody ItemDto itemDto) {
+        return itemService.update(itemId, userId, itemDto);
+    }
+
+    @GetMapping("/{itemId}")
+    public ItemDto get(@PathVariable @NotNull @Positive Integer itemId,
+                                       @RequestHeader(OWNER) @NotNull Integer userId) {
+        return itemService.get(itemId, userId);
     }
 
     @GetMapping
-    public Set<ItemDto> getAllItems(@RequestHeader(OWNER) Integer userId) {
-        return itemService.getAllItems(userId);
-    }
-
-    @PostMapping
-    public ItemDto create(@RequestHeader(OWNER) Integer userId, @Valid @RequestBody ItemDto itemDto) {
-        return itemService.create(userId,itemDto);
-    }
-
-    @PatchMapping("/{id}")
-    public ItemDto update(@Valid @RequestHeader(OWNER) Integer userId,
-                          @RequestBody ItemDto itemDto, @PathVariable Integer id) {
-        return itemService.update(userId,itemDto,id);
+    public List<ItemDtoExtended> getAll(@RequestHeader(OWNER) @NotNull Integer userId) {
+        return itemService.getAll(userId);
     }
 
     @GetMapping("/search")
-    public Set<ItemDto> searchItemByQuery(@RequestParam(name = "text") String query) {
-        return itemService.searchItemByQuery(query);
+    public List<ItemDto> search(@RequestHeader(OWNER) @NotNull Integer userId, @RequestParam("text") String text) {
+        return itemService.search(userId, text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentOutputDto addComment(@PathVariable @NotNull Integer itemId,
+                                                       @RequestHeader(OWNER) @NotNull Integer userId,
+                                                       @Valid @RequestBody Comment comment) {
+        return itemService.addComment(itemId, userId, comment);
+    }
+
+    @GetMapping("/{itemId}/comment")
+    public ItemDtoExtended getItemWithComments(@PathVariable @NotNull Integer itemId,
+                                                               @RequestHeader(OWNER) @NotNull Integer userId) {
+        return itemService.getItemWithComments(itemId, userId);
     }
 }
