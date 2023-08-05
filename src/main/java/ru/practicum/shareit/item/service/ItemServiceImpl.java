@@ -137,8 +137,8 @@ public class ItemServiceImpl implements ItemService {
 
         Boolean available = true;
 
-        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable
-                (text, text, available).stream()
+        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text,
+                        text, available).stream()
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
