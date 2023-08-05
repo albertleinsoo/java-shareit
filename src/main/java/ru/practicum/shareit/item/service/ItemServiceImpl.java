@@ -134,12 +134,11 @@ public class ItemServiceImpl implements ItemService {
         if (text == null || text.isEmpty()) {
             return new ArrayList<>();
         }
-        //todo сделать запросом к базе, а не прохождением по списку вещей
-        String searchQuery = text.toLowerCase();
-        return itemRepository.findAll().stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(searchQuery)
-                        || item.getDescription().toLowerCase().contains(searchQuery))
+
+        Boolean available = true;
+
+        return itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable
+                (text, text, available).stream()
                 .map(itemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
