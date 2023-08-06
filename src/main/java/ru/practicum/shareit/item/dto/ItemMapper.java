@@ -1,9 +1,8 @@
-package ru.practicum.shareit.item.mapper;
+package ru.practicum.shareit.item.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.factory.Mappers;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
@@ -12,5 +11,9 @@ public interface ItemMapper {
 
     ItemDto toItemDto(Item item);
 
+    ItemDtoWithRequestId toItemDtoWithRequestId(Item item);
+
     Item toItem(ItemDto itemDto);
+
+    Item toItem(ItemDtoWithRequestId itemDtoWithRequestId);
 }

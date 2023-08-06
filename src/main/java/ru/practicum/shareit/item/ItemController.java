@@ -1,11 +1,12 @@
-package ru.practicum.shareit.item.controller;
+package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.comment.dto.CommentOutputDto;
-import ru.practicum.shareit.comment.model.Comment;
+import ru.practicum.shareit.item.dto.CommentOutputDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
+import ru.practicum.shareit.item.dto.ItemDtoWithRequestId;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -22,20 +23,20 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto add(@RequestHeader(OWNER) @NotNull Integer userId, @Valid @RequestBody ItemDto itemDto) {
+    public ItemDtoWithRequestId add(@RequestHeader(OWNER) @NotNull Integer userId, @Valid @RequestBody ItemDtoWithRequestId itemDto) {
         return itemService.add(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@PathVariable @Positive Integer itemId,
-                                          @RequestHeader(OWNER) @NotNull Integer userId,
-                                          @Valid @RequestBody ItemDto itemDto) {
+                          @RequestHeader(OWNER) @NotNull Integer userId,
+                          @Valid @RequestBody ItemDto itemDto) {
         return itemService.update(itemId, userId, itemDto);
     }
 
     @GetMapping("/{itemId}")
     public ItemDto get(@PathVariable @NotNull @Positive Integer itemId,
-                                       @RequestHeader(OWNER) @NotNull Integer userId) {
+                       @RequestHeader(OWNER) @NotNull Integer userId) {
         return itemService.get(itemId, userId);
     }
 
@@ -51,14 +52,8 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentOutputDto addComment(@PathVariable @NotNull Integer itemId,
-                                                       @RequestHeader(OWNER) @NotNull Integer userId,
-                                                       @Valid @RequestBody Comment comment) {
+                                       @RequestHeader(OWNER) @NotNull Integer userId,
+                                       @Valid @RequestBody Comment comment) {
         return itemService.addComment(itemId, userId, comment);
-    }
-
-    @GetMapping("/{itemId}/comment")
-    public ItemDtoExtended getItemWithComments(@PathVariable @NotNull Integer itemId,
-                                                               @RequestHeader(OWNER) @NotNull Integer userId) {
-        return itemService.getItemWithComments(itemId, userId);
     }
 }

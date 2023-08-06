@@ -6,7 +6,7 @@ import ru.practicum.shareit.exceptions.DtoIntegrityException;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.exceptions.UserEmailAlreadyExistsException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -90,4 +90,3 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll().stream().map(User::getEmail).anyMatch(email::equals);
     }
 }
-

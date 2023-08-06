@@ -1,8 +1,12 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.validator.constraints.Length;
+import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -14,16 +18,15 @@ import java.util.Objects;
 @Table(name = "items")
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Item {
     @Id
     @Positive
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Название предмета не может быть пустым.")
+    @NotNull(message = "Item name can't be null.")
     @Length(max = 255)
     private String name;
 
@@ -38,6 +41,10 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
+
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private Request request;
 
     public Item(Integer id, String name, String description, Boolean available) {
         this.id = id;

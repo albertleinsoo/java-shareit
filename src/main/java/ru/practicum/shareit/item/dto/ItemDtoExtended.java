@@ -1,22 +1,15 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingDtoShortOutput;
-import ru.practicum.shareit.comment.dto.CommentOutputDto;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class ItemDtoExtended extends ItemDto {
-    private List<CommentOutputDto> comments = new ArrayList<>();
+    private List<CommentOutputDto> comments;
     private BookingDtoShortOutput lastBooking;
     private BookingDtoShortOutput nextBooking;
-
 
     public ItemDtoExtended(ItemDto itemDto, List<CommentOutputDto> comments) {
         super(itemDto.getId(), itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable());

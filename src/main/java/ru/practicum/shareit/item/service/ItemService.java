@@ -1,27 +1,29 @@
 package ru.practicum.shareit.item.service;
 
-import ru.practicum.shareit.comment.dto.CommentOutputDto;
-import ru.practicum.shareit.comment.model.Comment;
+import ru.practicum.shareit.item.dto.CommentOutputDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
+import ru.practicum.shareit.item.dto.ItemDtoWithRequestId;
+import ru.practicum.shareit.item.model.Comment;
 
 import java.util.List;
 
 public interface ItemService {
+
     /**
      * Добавление предмета
      * @param userId Id пользователя владельца
-     * @param itemDto Dto предмета
+     * @param itemDtoWithRequestId Dto предмета с id запросом
      * @return Dto добавленной вещи
      */
-    ItemDto add(Integer userId, ItemDto itemDto);
+    ItemDtoWithRequestId add(Integer userId, ItemDtoWithRequestId itemDtoWithRequestId);
 
     /**
-     * Обновление вещи
-     * @param itemId Id вещи
-     * @param userId Id владельца
-     * @param itemDto Dto с обновлёнными данными предмета
-     * @return Dto обовлённого предмета
+     * Обновление предмета
+     * @param itemId Id предмета
+     * @param userId Id пользователя
+     * @param itemDto Dto предмета
+     * @return Dto предмета
      */
     ItemDto update(Integer itemId, Integer userId, ItemDto itemDto);
 
@@ -56,12 +58,4 @@ public interface ItemService {
      * @return Dto комментария
      */
     CommentOutputDto addComment(Integer itemId, Integer userId, Comment comment);
-
-    /**
-     * Получение предмета с комментарием
-     * @param itemId Id предмета
-     * @param userId Id пользователя
-     * @return Dto предмета с комментарием
-     */
-    ItemDtoExtended getItemWithComments(Integer itemId, Integer userId);
 }

@@ -1,11 +1,10 @@
-package ru.practicum.shareit.comment.mapper;
+package ru.practicum.shareit.item.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.factory.Mappers;
-import ru.practicum.shareit.comment.dto.CommentOutputDto;
-import ru.practicum.shareit.comment.model.Comment;
+import ru.practicum.shareit.item.model.Comment;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CommentMapper {
