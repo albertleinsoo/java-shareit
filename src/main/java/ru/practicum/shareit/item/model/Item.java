@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.Hibernate;
 import org.hibernate.validator.constraints.Length;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.model.User;
@@ -12,7 +11,6 @@ import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import java.util.Objects;
 
 @Entity
 @Table(name = "items")
@@ -51,18 +49,5 @@ public class Item {
         this.name = name;
         this.description = description;
         this.available = available;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Item item = (Item) o;
-        return getId() != null && Objects.equals(getId(), item.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
     }
 }
