@@ -30,12 +30,12 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDtoShortOutput add(RequestDtoInput requestDtoInput, Integer userId) {
-        validateUser(userId);
+        //validateUser(userId);
         validateItemRequestDtoInput(requestDtoInput);
 
         Request request = requestMapper.toRequest(requestDtoInput);
 
-        request.setRequestingUser(userRepository.findById(userId).get());
+        request.setRequestingUser(userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Failed to process request. User with id = " + userId + " doesn't exist.")));
 
         request = requestRepository.save(request);
 
@@ -74,9 +74,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public RequestDtoOutput get(Integer requestId, Integer userId) {
         validateUser(userId);
-        validateRequest(requestId);
 
-        Request request = requestRepository.findById(requestId).get();
+        Request request = requestRepository.findById(requestId).orElseThrow(() -> new ObjectNotFoundException("Failed to process request. User with id = " + requestId + " doesn't exist."));
         RequestDtoOutput itemRequestOutput = requestMapper.toRequestDtoOutput(request);
 
         itemRequestOutput.setItems(findItemsByRequestId(requestId));
@@ -107,12 +106,6 @@ public class RequestServiceImpl implements RequestService {
     private void validateUser(Integer userId) {
         if (!userRepository.existsById(userId)) {
             throw new ObjectNotFoundException("Failed to process request. User with id = " + userId + " doesn't exist.");
-        }
-    }
-
-    private void validateRequest(Integer requestId) {
-        if (!requestRepository.existsById(requestId)) {
-            throw new ObjectNotFoundException("Failed to process request. User with id = " + requestId + " doesn't exist.");
         }
     }
 }

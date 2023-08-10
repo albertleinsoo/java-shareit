@@ -17,7 +17,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exceptions.DtoIntegrityException;
-import ru.practicum.shareit.exceptions.ItemAccessException;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
@@ -111,9 +110,6 @@ public class ItemServiceTest {
 
         Integer userId = user1.getId();
 
-        Mockito.when(userRepository.existsById(userId))
-                .thenReturn(true);
-
         Mockito.when(userRepository.findById(userId))
                 .thenReturn(Optional.ofNullable(user1));
 
@@ -146,9 +142,6 @@ public class ItemServiceTest {
                 .thenReturn(Optional.ofNullable(request));
 
         Integer userId = user1.getId();
-
-        Mockito.when(userRepository.existsById(userId))
-                .thenReturn(true);
 
         Mockito.when(userRepository.findById(userId))
                 .thenReturn(Optional.ofNullable(user1));
@@ -192,9 +185,6 @@ public class ItemServiceTest {
         ItemDto itemDtoUpdate = itemMapper.toItemDto(item2);
         Integer userId = user1.getId();
 
-        Mockito.when(itemRepository.existsById(itemIdToUpdate))
-                .thenReturn(true);
-
         item1.setOwner(user1);
 
         Mockito.when(itemRepository.findById(itemIdToUpdate))
@@ -203,6 +193,10 @@ public class ItemServiceTest {
         Mockito
                 .when(itemRepository.save(any()))
                 .thenReturn(item1);
+
+        Mockito
+                .when(userRepository.existsById(userId))
+                .thenReturn(true);
 
         ItemDto savedItemDto = itemService.update(itemIdToUpdate, userId, itemDtoUpdate);
 
@@ -221,9 +215,6 @@ public class ItemServiceTest {
         ItemDto itemDtoUpdate = itemMapper.toItemDto(item2);
         Integer userId = user1.getId();
 
-        Mockito.when(itemRepository.existsById(itemIdToUpdate))
-                .thenReturn(false);
-
         assertThrows(ObjectNotFoundException.class, () -> itemService.update(itemIdToUpdate, userId, itemDtoUpdate));
     }
 
@@ -232,9 +223,6 @@ public class ItemServiceTest {
         Integer itemIdToUpdate = item1.getId();
         ItemDto itemDtoUpdate = itemMapper.toItemDto(item1);
         Integer userId = user1.getId();
-
-        Mockito.when(itemRepository.existsById(itemIdToUpdate))
-                .thenReturn(true);
 
         Mockito.when(userRepository.existsById(userId))
                 .thenReturn(false);
@@ -248,15 +236,9 @@ public class ItemServiceTest {
         ItemDto itemDtoUpdate = itemMapper.toItemDto(item2);
         Integer userId = user2.getId();
 
-        Mockito.when(itemRepository.existsById(itemIdToUpdate))
-                .thenReturn(true);
-
         item1.setOwner(user1);
 
-        Mockito.when(itemRepository.findById(itemIdToUpdate))
-                .thenReturn(Optional.ofNullable(item1));
-
-        assertThrows(ItemAccessException.class, () -> itemService.update(itemIdToUpdate, userId, itemDtoUpdate));
+        assertThrows(ObjectNotFoundException.class, () -> itemService.update(itemIdToUpdate, userId, itemDtoUpdate));
     }
 
     @Test
@@ -264,9 +246,6 @@ public class ItemServiceTest {
         item1 = new Item(1, "Balalaika", "Brand new balalaika", true, user1, request);
         Integer itemIdToGet = item1.getId();
         Integer userIdRequesting = user1.getId();
-
-        Mockito.when(itemRepository.existsById(itemIdToGet))
-                .thenReturn(true);
 
         Mockito.when(itemRepository.findById(itemIdToGet))
                 .thenReturn(Optional.ofNullable(item1));
@@ -300,9 +279,6 @@ public class ItemServiceTest {
         Integer itemId = item1.getId();
         Integer userId = user1.getId();
 
-        Mockito.when(itemRepository.existsById(itemId))
-                .thenReturn(true);
-
         Mockito.when(itemRepository.findById(itemId))
                 .thenReturn(Optional.ofNullable(item1));
 
@@ -334,9 +310,6 @@ public class ItemServiceTest {
     void get_shouldReturnItemDtoExtendedWithLastAndNextBooking() {
         Integer itemId = item1.getId();
         Integer userId = user1.getId();
-
-        Mockito.when(itemRepository.existsById(itemId))
-                .thenReturn(true);
 
         Mockito.when(itemRepository.findById(itemId))
                 .thenReturn(Optional.ofNullable(item1));
@@ -370,9 +343,6 @@ public class ItemServiceTest {
         Integer itemId = item1.getId();
         Integer userId = user1.getId();
 
-        Mockito.when(itemRepository.existsById(itemId))
-                .thenReturn(true);
-
         Mockito.when(itemRepository.findById(itemId))
                 .thenReturn(Optional.ofNullable(item1));
 
@@ -402,9 +372,6 @@ public class ItemServiceTest {
     void get_throwsObjectNotFoundException_whenItemNotFound() {
         Integer itemIdToGet = item1.getId();
         Integer userIdRequesting = user1.getId();
-
-        Mockito.when(itemRepository.existsById(itemIdToGet))
-                .thenReturn(false);
 
         assertThrows(ObjectNotFoundException.class, () -> itemService.get(itemIdToGet, userIdRequesting));
     }

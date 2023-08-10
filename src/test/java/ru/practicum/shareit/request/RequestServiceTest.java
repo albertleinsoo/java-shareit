@@ -68,9 +68,6 @@ public class RequestServiceTest {
         Integer userId = user.getId();
         RequestDtoInput requestDtoInput = new RequestDtoInput(request.getDescription());
 
-        Mockito.when(userRepository.existsById(userId))
-                .thenReturn(true);
-
         Mockito.when(userRepository.findById(userId))
                 .thenReturn(Optional.ofNullable(user));
 
@@ -90,9 +87,6 @@ public class RequestServiceTest {
     void add_throwsDtoIntegrityException() {
         Integer userId = user.getId();
         RequestDtoInput requestDtoInput = new RequestDtoInput();
-
-        Mockito.when(userRepository.existsById(user.getId()))
-                .thenReturn(true);
 
         assertThrows(DtoIntegrityException.class, () -> requestService.add(requestDtoInput, userId));
     }
@@ -157,10 +151,8 @@ public class RequestServiceTest {
         Mockito.when(userRepository.existsById(userId))
                 .thenReturn(true);
 
-        Mockito.when(requestRepository.existsById(requestId))
-                .thenReturn(true);
-
-        Mockito.when(requestRepository.findById(requestId))
+        Mockito.lenient()
+                .when(requestRepository.findById(requestId))
                 .thenReturn(Optional.ofNullable(request));
 
         Mockito.when(itemRepository.findByRequestId(requestId))

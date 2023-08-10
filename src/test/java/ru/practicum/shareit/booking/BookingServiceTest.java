@@ -22,8 +22,10 @@ import ru.practicum.shareit.exceptions.IllegalItemBookingException;
 import ru.practicum.shareit.exceptions.IllegalSearchModeException;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.exceptions.UnavailableItemBookingException;
+import ru.practicum.shareit.item.dto.ItemMapperImpl;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.dto.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -53,6 +55,12 @@ public class BookingServiceTest {
     @Spy
     private BookingMapperImpl bookingMapper;
 
+    @Spy
+    private UserMapperImpl userMapper;
+
+    @Spy
+    private ItemMapperImpl itemMapper;
+
     private Item item;
     private User user;
     private User userBooker;
@@ -71,12 +79,6 @@ public class BookingServiceTest {
         Integer bookerId = userBooker.getId();
         BookingDtoInput bookingDtoInput = new BookingDtoInput(userBooker.getId(), item.getId(), LocalDateTime.now().minusDays(2), LocalDateTime.now().plusDays(2));
 
-        Mockito.when(userRepository.existsById(bookerId))
-                .thenReturn(true);
-
-        Mockito.when(itemRepository.existsById(bookingDtoInput.getItemId()))
-                .thenReturn(true);
-
         Mockito.when(itemRepository.findById(bookingDtoInput.getItemId()))
                 .thenReturn(Optional.ofNullable(item));
 
@@ -90,6 +92,13 @@ public class BookingServiceTest {
         BookingDtoOutput bookingDtoOutputSaved = bookingService.add(bookerId, bookingDtoInput);
 
         assertNotNull(bookingDtoOutputSaved);
+        assertEquals(bookingDtoOutputSaved.getId(), booking.getId());
+        assertEquals(bookingDtoOutputSaved.getStart(), booking.getStart());
+        assertEquals(bookingDtoOutputSaved.getEnd(), booking.getEnd());
+        assertEquals(bookingDtoOutputSaved.getBooker(), userMapper.toUserDto(booking.getBooker()));
+        assertEquals(bookingDtoOutputSaved.getStatus(), booking.getStatus());
+        assertEquals(bookingDtoOutputSaved.getItem(), itemMapper.toItemDto(booking.getItem()));
+        assertEquals(bookingDtoOutputSaved, bookingMapper.toBookingDtoOutput(booking));
     }
 
     @Test
@@ -99,16 +108,7 @@ public class BookingServiceTest {
         Integer bookerId = userBooker.getId();
         BookingDtoInput bookingDtoInput = new BookingDtoInput(userBooker.getId(), item.getId(), LocalDateTime.now().minusDays(2), LocalDateTime.now().plusDays(2));
 
-        Mockito.when(userRepository.existsById(bookerId))
-                .thenReturn(true);
-
-        Mockito.when(itemRepository.existsById(bookingDtoInput.getItemId()))
-                .thenReturn(true);
-
-        Mockito.when(itemRepository.findById(bookingDtoInput.getItemId()))
-                .thenReturn(Optional.ofNullable(item));
-
-        assertThrows(UnavailableItemBookingException.class, () -> bookingService.add(bookerId, bookingDtoInput));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.add(bookerId, bookingDtoInput));
     }
 
     @Test
@@ -117,12 +117,6 @@ public class BookingServiceTest {
 
         Integer bookerId = userBooker.getId();
         BookingDtoInput bookingDtoInput = new BookingDtoInput(userBooker.getId(), item.getId(), LocalDateTime.now().minusDays(2), LocalDateTime.now().plusDays(2));
-
-        Mockito.when(userRepository.existsById(bookerId))
-                .thenReturn(true);
-
-        Mockito.when(itemRepository.existsById(bookingDtoInput.getItemId()))
-                .thenReturn(true);
 
         Mockito.when(itemRepository.findById(bookingDtoInput.getItemId()))
                 .thenReturn(Optional.ofNullable(item));
@@ -135,15 +129,6 @@ public class BookingServiceTest {
         Integer bookerId = userBooker.getId();
         BookingDtoInput bookingDtoInput = new BookingDtoInput(userBooker.getId(), item.getId(), LocalDateTime.now().minusDays(2), LocalDateTime.now().plusDays(2));
 
-        Mockito.when(userRepository.existsById(bookerId))
-                .thenReturn(true);
-
-        Mockito.when(itemRepository.existsById(bookingDtoInput.getItemId()))
-                .thenReturn(true);
-
-        Mockito.when(itemRepository.findById(bookingDtoInput.getItemId()))
-                .thenReturn(Optional.empty());
-
         assertThrows(ObjectNotFoundException.class, () -> bookingService.add(bookerId, bookingDtoInput));
     }
 
@@ -154,12 +139,6 @@ public class BookingServiceTest {
         Integer bookingId = booking.getId();
         Integer userId = user.getId();
         boolean isApproved = true;
-
-        Mockito.when(bookingRepository.existsById(bookingId))
-                .thenReturn(true);
-
-        Mockito.when(userRepository.existsById(userId))
-                .thenReturn(true);
 
         Mockito.when(bookingRepository.findById(bookingId))
                 .thenReturn(Optional.ofNullable(booking));
@@ -181,16 +160,7 @@ public class BookingServiceTest {
         Integer userId = user.getId();
         boolean isApproved = true;
 
-        Mockito.when(bookingRepository.existsById(bookingId))
-                .thenReturn(true);
-
-        Mockito.when(userRepository.existsById(userId))
-                .thenReturn(true);
-
-        Mockito.when(bookingRepository.findById(bookingId))
-                .thenReturn(Optional.ofNullable(booking));
-
-        assertThrows(IllegalItemBookingException.class, () -> bookingService.setApprove(bookingId, userId, isApproved));
+        assertThrows(ObjectNotFoundException.class, () -> bookingService.setApprove(bookingId, userId, isApproved));
     }
 
     @Test
@@ -198,12 +168,6 @@ public class BookingServiceTest {
         Integer bookingId = booking.getId();
         Integer userId = user.getId();
         boolean isApproved = true;
-
-        Mockito.when(bookingRepository.existsById(bookingId))
-                .thenReturn(true);
-
-        Mockito.when(userRepository.existsById(userId))
-                .thenReturn(true);
 
         Mockito.when(bookingRepository.findById(bookingId))
                 .thenReturn(Optional.ofNullable(booking));
@@ -219,12 +183,6 @@ public class BookingServiceTest {
         Integer userId = user.getId();
         boolean isApproved = true;
 
-        Mockito.when(bookingRepository.existsById(bookingId))
-                .thenReturn(true);
-
-        Mockito.when(userRepository.existsById(userId))
-                .thenReturn(true);
-
         Mockito.when(bookingRepository.findById(bookingId))
                 .thenReturn(Optional.empty());
 
@@ -235,9 +193,6 @@ public class BookingServiceTest {
     void get_shouldReturnBookingDtoOutput() {
         Integer bookingId = booking.getId();
         Integer userId = user.getId();
-
-        Mockito.when(bookingRepository.existsById(bookingId))
-                .thenReturn(true);
 
         Mockito.when(userRepository.existsById(userId))
                 .thenReturn(true);
@@ -254,9 +209,6 @@ public class BookingServiceTest {
     void get_throwsObjectNotFoundException() {
         Integer bookingId = booking.getId();
         Integer userId = user.getId();
-
-        Mockito.when(bookingRepository.existsById(bookingId))
-                .thenReturn(true);
 
         Mockito.when(userRepository.existsById(userId))
                 .thenReturn(true);

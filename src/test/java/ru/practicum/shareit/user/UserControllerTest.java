@@ -36,7 +36,7 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    UserDto userDto;
+    private UserDto userDto;
 
     @BeforeEach
     void setup() {

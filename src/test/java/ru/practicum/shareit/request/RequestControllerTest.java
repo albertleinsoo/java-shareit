@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithRequestId;
 import ru.practicum.shareit.request.dto.RequestDtoInput;
@@ -23,6 +24,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -113,5 +116,38 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.id", is(requestDtoOutput.getId()), Integer.class))
                 .andExpect(jsonPath("$.description", is(requestDtoOutput.getDescription())));
         verify(requestService, times(1)).get(any(), any());
+    }
+
+    @Test
+    void get_shouldReturnNotFound() throws Exception {
+        doThrow(new ObjectNotFoundException("exception"))
+                .when(requestService).get(any(),any());
+
+        mockMvc.perform(get("/requests/{requestId}", 1)
+                        .header("X-Sharer-User-Id", 1))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ObjectNotFoundException))
+                .andExpect(result -> assertEquals("exception", result.getResolvedException().getMessage()));
+
+    }
+
+    @Test
+    void get_shouldReturnBadRequest() throws Exception {
+        String exceptionParam = "dummy";
+
+        mockMvc.perform(get("/requests/{requestId}", exceptionParam)
+                        .header("X-Sharer-User-Id", 1))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(requestService);
+    }
+
+    @Test
+    void post_shouldReturnBadRequest() throws Exception {
+        String exceptionParam = "dummy";
+
+        mockMvc.perform(post("/requests", exceptionParam)
+                        .header("X-Sharer-User-Id", 1))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(requestService);
     }
 }

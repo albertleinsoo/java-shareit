@@ -40,15 +40,15 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDtoWithRequestId add(Integer userId, ItemDtoWithRequestId itemDtoWithRequestId) {
         validateItemDto(itemDtoWithRequestId);
-        validateUser(userId);
 
         Item item = itemMapper.toItem(itemDtoWithRequestId);
 
         if (itemDtoWithRequestId.getRequestId() != null) {
-            item.setRequest(requestRepository.findById(itemDtoWithRequestId.getRequestId()).get());
+            item.setRequest(requestRepository.findById(itemDtoWithRequestId.getRequestId())
+                    .orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса. Request с id = " + itemDtoWithRequestId.getRequestId() + " не существует")));
         }
 
-        item.setOwner(userRepository.findById(userId).get());
+        item.setOwner(userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("User с id = " + userId + " не найден.")));
         item = itemRepository.save(item);
 
         ItemDtoWithRequestId itemDtoOutput = itemMapper.toItemDtoWithRequestId(item);
@@ -58,13 +58,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(Integer itemId, Integer userId, ItemDto itemDto) {
-        validateItem(itemId);
+        validateUser(userId);
 
-        if (itemId.equals(itemDto.getId())) {
-            validateUser(userId);
-        }
-
-        Item item = itemRepository.findById(itemId).get();
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса бронирования. Предмет с id = " + itemId + " не существует."));
 
         if (!Objects.equals(userId, item.getOwner().getId())) {
             throw new ItemAccessException("Ошибка обновления предмета. Только владелец может обновлять предмет.");
@@ -88,11 +84,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDtoExtended get(Integer itemId, Integer userId) {
-        validateItem(itemId);
 
         Sort sort = Sort.by("start").descending();
 
-        Item item = itemRepository.findById(itemId).get();
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса бронирования. Предмет с id = " + itemId + " не существует."));
         ItemDto itemDto = itemMapper.toItemDto(item);
 
         List<CommentOutputDto> itemComments = commentRepository.findByItemId(itemId).stream()
@@ -179,7 +174,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         commentInput.setItem(item);
-        commentInput.setAuthor(userRepository.findById(userId).get());
+        commentInput.setAuthor(userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса бронирования. Пользователь с id = " + userId + " не существует.")));
 
         Comment comment = commentRepository.save(commentInput);
 
@@ -202,12 +197,6 @@ public class ItemServiceImpl implements ItemService {
     private void validateUser(Integer userId) {
         if (!userRepository.existsById(userId)) {
             throw new ObjectNotFoundException("Ошибка запроса бронирования. Пользователь с id = " + userId + " не существует.");
-        }
-    }
-
-    private void validateItem(Integer itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new ObjectNotFoundException("Ошибка запроса бронирования. Предмет с id = " + itemId + " не существует.");
         }
     }
 }

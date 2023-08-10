@@ -35,24 +35,19 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDtoOutput add(Integer bookerId, BookingDtoInput bookingDtoInput) {
         validateBookingDtoInput(bookingDtoInput);
-        validateUser(bookerId);
-        validateItem(bookingDtoInput.getItemId());
 
-        Optional<Item> optionalItem = itemRepository.findById(bookingDtoInput.getItemId());
-        if (optionalItem.isEmpty()) {
-            throw new ObjectNotFoundException("Failed to receive item.");
-        }
-        Item item = optionalItem.get();
+        Item item = itemRepository.findById(bookingDtoInput.getItemId())
+                .orElseThrow(() -> new ObjectNotFoundException("Ошибка получения предмета."));
 
         if (!item.getAvailable()) {
-            throw new UnavailableItemBookingException("Failed to create booking. Items with status 'unavailable' can't be booked.");
+            throw new UnavailableItemBookingException("Ошибка создания бронирования. Недоступные предметы не могут быть забронированы.");
         }
         if (item.getOwner().getId().equals(bookerId)) {
-            throw new IllegalItemBookingException("Failed to create booking. Item owners are not allowed to book their own items.");
+            throw new IllegalItemBookingException("Ошибка создания бронирования. Владелец не может забронировать свой предмет.");
         }
 
         Booking booking = bookingMapper.toBooking(bookingDtoInput);
-        booking.setBooker(userRepository.findById(bookerId).get());
+        booking.setBooker(userRepository.findById(bookerId).orElseThrow(() -> new ObjectNotFoundException("Ошибка создания предмета.")));
         booking.setStatus(BookingStatus.WAITING);
         booking.setItem(item);
 
@@ -62,23 +57,21 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOutput setApprove(Integer bookingId, Integer userId, Boolean isApproved) {
-        validateBooking(bookingId);
-        validateUser(userId);
 
         Optional<Booking> optionalBooking = bookingRepository.findById(bookingId);
         if (optionalBooking.isEmpty()) {
-            throw new ObjectNotFoundException("Booking with id = " + bookingId + " was not found.");
+            throw new ObjectNotFoundException("Booking с id = " + bookingId + " не найден.");
         }
         Booking booking = optionalBooking.get();
 
         Integer itemOwnerId = booking.getItem().getOwner().getId();
 
         if (!Objects.equals(userId, itemOwnerId)) {
-            throw new IllegalItemBookingException("Failed to change booking status. Only item owners are allowed to change booking status.");
+            throw new IllegalItemBookingException("Ошибка изменения статуса бронирования. Только владелец может менять статус.");
         }
 
         if (!booking.getStatus().equals(BookingStatus.WAITING)) {
-            throw new UnavailableItemBookingException("Booking status must be 'WAITING'.");
+            throw new UnavailableItemBookingException("Статус должен быть = 'WAITING'.");
         }
 
         if (isApproved) {
@@ -93,12 +86,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOutput get(Integer bookingId, Integer userId) {
-        validateBooking(bookingId);
         validateUser(userId);
 
         Optional<Booking> optionalBooking = bookingRepository.findById(bookingId);
         if (optionalBooking.isEmpty()) {
-            throw new ObjectNotFoundException("Booking with id = " + bookingId + "was not found.");
+            throw new ObjectNotFoundException("Booking с id = " + bookingId + "не найден.");
         }
         Booking booking = optionalBooking.get();
 
@@ -106,7 +98,7 @@ public class BookingServiceImpl implements BookingService {
         Integer bookerId = booking.getBooker().getId();
 
         if (!userId.equals(itemOwnerId) && !userId.equals(bookerId)) {
-            throw new ObjectNotFoundException("Failed to get booking. Only item owners and item bookers are allowed to view bookings.");
+            throw new ObjectNotFoundException("Ошибка бронирования. Только владельцы и зпказчики могут просматривать бронирования.");
         }
 
         return bookingMapper.toBookingDtoOutput(booking);
@@ -130,7 +122,7 @@ public class BookingServiceImpl implements BookingService {
 
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
-            throw new ObjectNotFoundException("User with id = " + userId + "was not found.");
+            throw new ObjectNotFoundException("User с id = " + userId + " не найден.");
         }
 
         LocalDateTime currentDateTime = LocalDateTime.now();
@@ -190,7 +182,7 @@ public class BookingServiceImpl implements BookingService {
 
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
-            throw new ObjectNotFoundException("User with id = " + userId + " was not found.");
+            throw new ObjectNotFoundException("User с id = " + userId + " не найден.");
         }
 
         switch (bookingSearchMode) {
@@ -238,19 +230,7 @@ public class BookingServiceImpl implements BookingService {
 
     private void validateUser(Integer userId) {
         if (!userRepository.existsById(userId)) {
-            throw new ObjectNotFoundException("Failed to process request. User with id = " + userId + " doesn't exist.");
-        }
-    }
-
-    private void validateItem(Integer itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new ObjectNotFoundException("Failed to process request. Item with id = " + itemId + " doesn't exist.");
-        }
-    }
-
-    private void validateBooking(Integer bookingId) {
-        if (!bookingRepository.existsById(bookingId)) {
-            throw new ObjectNotFoundException("Failed to process request. Booking with id = " + bookingId + " doesn't exist.");
+            throw new ObjectNotFoundException("Ошибка обработки пользователя. User с id = " + userId + " не существует.");
         }
     }
 
