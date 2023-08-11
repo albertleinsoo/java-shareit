@@ -19,4 +19,3 @@ public class RequestDtoOutput extends RequestDtoShortOutput {
         this.items = items;
     }
 }
-

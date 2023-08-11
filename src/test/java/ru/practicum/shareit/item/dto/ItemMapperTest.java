@@ -40,7 +40,7 @@ public class ItemMapperTest {
         assertEquals(item.getName(), itemDtoWithRequestId.getName());
         assertEquals(item.getDescription(), itemDtoWithRequestId.getDescription());
         assertEquals(item.getAvailable(), itemDtoWithRequestId.getAvailable());
-        assertNull(itemDtoWithRequestId.getRequestId());
+        assertEquals(item.getRequest().getId(), itemDtoWithRequestId.getRequestId());
     }
 
     @Test

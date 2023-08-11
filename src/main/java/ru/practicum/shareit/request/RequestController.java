@@ -2,6 +2,7 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestDtoInput;
 import ru.practicum.shareit.request.dto.RequestDtoOutput;
 import ru.practicum.shareit.request.dto.RequestDtoShortOutput;
@@ -9,6 +10,7 @@ import ru.practicum.shareit.request.service.RequestService;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -26,14 +28,14 @@ public class RequestController {
     }
 
     @GetMapping
-    public List<RequestDtoOutput> getByUser(@RequestHeader(OWNER) @NotNull Integer userId) {
+    public List<RequestDto> getByUser(@RequestHeader(OWNER) @NotNull Integer userId) {
         return requestService.getByUser(userId);
     }
 
     @GetMapping("/all")
-    public List<RequestDtoOutput> getAll(@RequestParam(name = "from", required = false) Integer from,
-                                                         @RequestParam(name = "size", required = false) Integer size,
-                                                         @RequestHeader(OWNER) @NotNull Integer userId) {
+    public List<RequestDto> getAll(@PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
+                                   @Positive @RequestParam(defaultValue = "10") Integer size,
+                                   @RequestHeader(OWNER) @NotNull Integer userId) {
         return requestService.getAll(from, size, userId);
     }
 

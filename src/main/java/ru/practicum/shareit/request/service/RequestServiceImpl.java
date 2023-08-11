@@ -8,16 +8,18 @@ import ru.practicum.shareit.item.dto.ItemDtoWithRequestId;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.request.dto.RequestDtoInput;
-import ru.practicum.shareit.request.dto.RequestDtoOutput;
-import ru.practicum.shareit.request.dto.RequestDtoShortOutput;
-import ru.practicum.shareit.request.dto.RequestMapper;
+import ru.practicum.shareit.request.dto.*;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDtoShortOutput add(RequestDtoInput requestDtoInput, Integer userId) {
-        //validateUser(userId);
+
         validateItemRequestDtoInput(requestDtoInput);
 
         Request request = requestMapper.toRequest(requestDtoInput);
@@ -43,32 +45,23 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<RequestDtoOutput> getByUser(Integer userId) {
+    public List<RequestDto> getByUser(Integer userId) {
         validateUser(userId);
         List<Request> requests = requestRepository.findByRequestingUserIdOrderByCreatedDesc(userId);
-        List<RequestDtoOutput> itemRequestOutput = requests.stream()
-                .map(requestMapper::toRequestDtoOutput)
-                .collect(Collectors.toList());
 
-        itemRequestOutput.forEach(itemRequest -> itemRequest.setItems(findItemsByRequestId(itemRequest.getId())));
-        return itemRequestOutput;
+        return getItemRequestsDtoWithItems(requests);
     }
 
     @Override
-    public List<RequestDtoOutput> getAll(Integer from, Integer size, Integer userId) {
+    public List<RequestDto> getAll(Integer from, Integer size, Integer userId) {
         validateUser(userId);
         if (from != null && size != null) {
             validatePaginationParams(from, size);
         }
 
         List<Request> requests = requestRepository.findByRequestingUserIdNotOrderByCreatedDesc(userId);
-        List<RequestDtoOutput> itemRequestOutput = requests.stream()
-                .map(requestMapper::toRequestDtoOutput)
-                .collect(Collectors.toList());
 
-        itemRequestOutput.forEach(itemRequest -> itemRequest.setItems(findItemsByRequestId(itemRequest.getId())));
-
-        return itemRequestOutput;
+        return getItemRequestsDtoWithItems(requests);
     }
 
     @Override
@@ -89,6 +82,30 @@ public class RequestServiceImpl implements RequestService {
                 .map(itemMapper::toItemDto)
                 .map(itemDto -> new ItemDtoWithRequestId(itemDto, requestId))
                 .collect(Collectors.toList());
+    }
+
+    private List<RequestDto> getItemRequestsDtoWithItems(List<Request> requests) {
+        List<Integer> requestsId = requests.stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+
+        List<Item> items = itemRepository.findByRequest_IdIn(requestsId);
+
+        Map<Request, List<Item>> itemRequestsByItem = items.stream()
+                .collect(groupingBy(Item::getRequest, toList()));
+
+        List<RequestDto> requestDto = new ArrayList<>();
+
+        for (Request itemRequest : requests) {
+            List<Item> itemsTemp = itemRequestsByItem.getOrDefault(itemRequest, List.of());
+
+            List<ItemDtoWithRequestId> itemDtoForRequests = itemsTemp.stream()
+                    .map(itemMapper::toItemDtoWithRequestId)
+                    .collect(toList());
+            requestDto.add(requestMapper.toRequestDto(itemRequest, itemDtoForRequests));
+        }
+
+        return requestDto;
     }
 
     private void validatePaginationParams(Integer from, Integer size) {

@@ -13,10 +13,7 @@ import ru.practicum.shareit.exceptions.DtoIntegrityException;
 import ru.practicum.shareit.item.dto.ItemMapperImpl;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.request.dto.RequestDtoInput;
-import ru.practicum.shareit.request.dto.RequestDtoOutput;
-import ru.practicum.shareit.request.dto.RequestDtoShortOutput;
-import ru.practicum.shareit.request.dto.RequestMapperImpl;
+import ru.practicum.shareit.request.dto.*;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.request.service.RequestServiceImpl;
@@ -58,9 +55,9 @@ public class RequestServiceTest {
 
     @BeforeEach
     void setup() {
+        request = new Request(1, "Looking for Balalaika", LocalDateTime.now(), user);
         item = new Item(1, "Balalaika", "Brand new balalaika", true, user, request);
         user = new User(2, "Shaun", "shaun@ya.ru");
-        request = new Request(1, "Looking for Balalaika", LocalDateTime.now(), user);
     }
 
     @Test
@@ -101,10 +98,10 @@ public class RequestServiceTest {
         Mockito.when(requestRepository.findByRequestingUserIdOrderByCreatedDesc(userId))
                 .thenReturn(List.of(request));
 
-        Mockito.when(itemRepository.findByRequestId(request.getId()))
+        Mockito.when(itemRepository.findByRequest_IdIn(any()))
                 .thenReturn(List.of(item));
 
-        List<RequestDtoOutput> requestDtoSaved = requestService.getByUser(userId);
+        List<RequestDto> requestDtoSaved = requestService.getByUser(userId);
 
         assertNotNull(requestDtoSaved.get(0));
         assertEquals(requestDtoSaved.get(0).getItems().size(), 1);
@@ -122,13 +119,13 @@ public class RequestServiceTest {
         Mockito.when(requestRepository.findByRequestingUserIdNotOrderByCreatedDesc(userId))
                 .thenReturn(List.of(request));
 
-        Mockito.when(itemRepository.findByRequestId(request.getId()))
+        Mockito.when(itemRepository.findByRequest_IdIn(List.of(request.getId())))
                 .thenReturn(List.of(item));
 
-        List<RequestDtoOutput> requestDtoSaved = requestService.getAll(from, size, userId);
+        List<RequestDto> requestDtoSaved = requestService.getAll(from, size, userId);
 
         assertNotNull(requestDtoSaved.get(0));
-        assertEquals(requestDtoSaved.get(0).getItems().size(), 1);
+        assertEquals(1, requestDtoSaved.get(0).getItems().size());
     }
 
     @Test

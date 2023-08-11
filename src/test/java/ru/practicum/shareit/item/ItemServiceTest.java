@@ -117,6 +117,14 @@ public class ItemServiceTest {
                 .when(itemRepository.save(any()))
                 .thenReturn(item1);
 
+        Mockito
+                .when(requestRepository.existsById(item1.getRequest().getId()))
+                .thenReturn(true);
+
+        Mockito
+                .when(requestRepository.findById(item1.getRequest().getId()))
+                .thenReturn(Optional.ofNullable(request));
+
         ItemDtoWithRequestId savedItemDto = itemService.add(userId, itemDto);
 
         assertAll(
@@ -124,7 +132,7 @@ public class ItemServiceTest {
                 () -> assertEquals(item1.getName(), savedItemDto.getName()),
                 () -> assertEquals(item1.getDescription(), savedItemDto.getDescription()),
                 () -> assertEquals(item1.getAvailable(), savedItemDto.getAvailable()),
-                () -> assertNull(savedItemDto.getRequestId())
+                () -> assertEquals(item1.getRequest().getId(), savedItemDto.getRequestId())
         );
 
         verify(itemRepository, atMostOnce()).saveAndFlush(any());

@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.exceptions.ObjectNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithRequestId;
+import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestDtoInput;
 import ru.practicum.shareit.request.dto.RequestDtoOutput;
 import ru.practicum.shareit.request.dto.RequestDtoShortOutput;
@@ -51,6 +52,8 @@ public class RequestControllerTest {
     private RequestDtoShortOutput requestDtoShortOutput;
     private RequestDtoOutput requestDtoOutput;
 
+    private RequestDto requestDto;
+
     @BeforeEach
     void setup() {
         ItemDto itemDto = new ItemDto(1, "Balalaika", "Brand new balalaika", true);
@@ -62,6 +65,7 @@ public class RequestControllerTest {
 
         requestDtoShortOutput = new RequestDtoShortOutput(1, "Looking for a balalaika", LocalDateTime.now());
         requestDtoOutput = new RequestDtoOutput(request, List.of(itemDtoWithRequestId));
+        requestDto = new RequestDto(1, "Looking for a balalaika", user.getId(), LocalDateTime.now(), List.of(itemDtoWithRequestId));
         requestDtoInput = new RequestDtoInput("Looking for a balalaika");
     }
 
@@ -82,7 +86,7 @@ public class RequestControllerTest {
 
     @Test
     void getByUser_shouldReturnStatusOk() throws Exception {
-        when(requestService.getByUser(any())).thenReturn(List.of(requestDtoOutput));
+        when(requestService.getByUser(any())).thenReturn(List.of(requestDto));
 
         mockMvc.perform(get("/requests")
                         .header("X-Sharer-User-Id", 1))
@@ -94,7 +98,7 @@ public class RequestControllerTest {
 
     @Test
     void getAll_shouldReturnStatusOk() throws Exception {
-        when(requestService.getAll(any(), any(), any())).thenReturn(List.of(requestDtoOutput));
+        when(requestService.getAll(any(), any(), any())).thenReturn(List.of(requestDto));
 
         mockMvc.perform(get("/requests/all")
                         .param("from", String.valueOf(0))

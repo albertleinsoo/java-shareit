@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request.service;
 
+import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestDtoInput;
 import ru.practicum.shareit.request.dto.RequestDtoOutput;
 import ru.practicum.shareit.request.dto.RequestDtoShortOutput;
@@ -21,7 +22,7 @@ public interface RequestService {
      * @param userId Id пользователя
      * @return Список Dto запросов
      */
-    List<RequestDtoOutput> getByUser(Integer userId);
+    List<RequestDto> getByUser(Integer userId);
 
     /**
      * Получить список запросов, созданных другим пользователям
@@ -30,7 +31,7 @@ public interface RequestService {
      * @param userId Id пользователя
      * @return Список Dto запросов
      */
-    List<RequestDtoOutput> getAll(Integer from, Integer size, Integer userId);
+    List<RequestDto> getAll(Integer from, Integer size, Integer userId);
 
     /**
      * Получить данные об одном конкретном запросе вместе с данными об ответах на него
