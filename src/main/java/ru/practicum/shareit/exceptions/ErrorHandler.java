@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 
+@Generated
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {

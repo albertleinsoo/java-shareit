@@ -1,22 +1,21 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.mapper.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.comment.dto.CommentOutputDto;
-import ru.practicum.shareit.comment.mapper.CommentMapper;
-import ru.practicum.shareit.comment.model.Comment;
-import ru.practicum.shareit.comment.repository.CommentRepository;
 import ru.practicum.shareit.exceptions.*;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoExtended;
-import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -33,26 +32,35 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
     private final ItemMapper itemMapper;
     private final BookingMapper bookingMapper;
     private final CommentMapper commentMapper;
 
     @Override
-    public ItemDto add(Integer userId, ItemDto itemDto) {
-        validateItemDto(itemDto);
-        validateUser(userId);
+    public ItemDtoWithRequestId add(Integer userId, ItemDtoWithRequestId itemDtoWithRequestId) {
+        validateItemDto(itemDtoWithRequestId);
 
-        Item item = itemMapper.toItem(itemDto);
-        item.setOwner(userRepository.findById(userId).get());
+        Item item = itemMapper.toItem(itemDtoWithRequestId);
+
+        if (itemDtoWithRequestId.getRequestId() != null) {
+            item.setRequest(requestRepository.findById(itemDtoWithRequestId.getRequestId())
+                    .orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса. Request с id = " + itemDtoWithRequestId.getRequestId() + " не существует")));
+        }
+
+        item.setOwner(userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("User с id = " + userId + " не найден.")));
         item = itemRepository.save(item);
-        return itemMapper.toItemDto(item);
+
+        ItemDtoWithRequestId itemDtoOutput = itemMapper.toItemDtoWithRequestId(item);
+        itemDtoOutput.setRequestId(itemDtoWithRequestId.getRequestId());
+        return itemDtoOutput;
     }
 
     @Override
     public ItemDto update(Integer itemId, Integer userId, ItemDto itemDto) {
-        validateItem(itemId);
+        validateUser(userId);
 
-        Item item = itemRepository.findById(itemId).get();
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса бронирования. Предмет с id = " + itemId + " не существует."));
 
         if (!Objects.equals(userId, item.getOwner().getId())) {
             throw new ItemAccessException("Ошибка обновления предмета. Только владелец может обновлять предмет.");
@@ -76,11 +84,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDtoExtended get(Integer itemId, Integer userId) {
-        validateItem(itemId);
 
         Sort sort = Sort.by("start").descending();
 
-        Item item = itemRepository.findById(itemId).get();
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса бронирования. Предмет с id = " + itemId + " не существует."));
         ItemDto itemDto = itemMapper.toItemDto(item);
 
         List<CommentOutputDto> itemComments = commentRepository.findByItemId(itemId).stream()
@@ -155,7 +162,9 @@ public class ItemServiceImpl implements ItemService {
 
         Sort sort = Sort.by("start").descending();
 
-        List<Booking> bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, LocalDateTime.now(), sort);
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, sort);
+
+        List<Booking> bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), pageable).toList();
         if (bookings.isEmpty()) {
             throw new UnavailableItemBookingException("Ошибка добавления комментария. Нет завершённых бронирований.");
         }
@@ -165,42 +174,29 @@ public class ItemServiceImpl implements ItemService {
         }
 
         commentInput.setItem(item);
-        commentInput.setAuthor(userRepository.findById(userId).get());
+        commentInput.setAuthor(userRepository.findById(userId).orElseThrow(() -> new ObjectNotFoundException("Ошибка запроса бронирования. Пользователь с id = " + userId + " не существует.")));
 
         Comment comment = commentRepository.save(commentInput);
 
         return commentMapper.toCommentOutputDto(comment);
     }
 
-    @Override
-    public ItemDtoExtended getItemWithComments(Integer itemId, Integer userId) {
-        validateUser(userId);
-        validateItem(itemId);
-
-        ItemDto itemDto = get(itemId, userId);
-
-        List<CommentOutputDto> itemComments = commentRepository.findByItemId(itemId).stream()
-                .map(commentMapper::toCommentOutputDto).collect(Collectors.toList());
-
-        return new ItemDtoExtended(itemDto, itemComments);
-    }
-
-    private void validateItemDto(ItemDto itemDto) {
-        if (itemDto.getAvailable() == null || itemDto.getName() == null || itemDto.getName().isEmpty()
-                || itemDto.getDescription() == null) {
-            throw new DtoIntegrityException("Ошибка запроса бронирования. Название предмета, описание или статус не должны быть null.");
+    private void validateItemDto(ItemDtoWithRequestId itemDtoWithRequestId) {
+        if (itemDtoWithRequestId.getAvailable() == null || itemDtoWithRequestId.getName() == null || itemDtoWithRequestId.getName().isEmpty()
+                || itemDtoWithRequestId.getDescription() == null) {
+            throw new DtoIntegrityException("Ошибка запроса предмета. Название, оприсание и статус предмета не должны быть null.");
+        }
+        if (itemDtoWithRequestId.getRequestId() != null) {
+            if (!requestRepository.existsById(itemDtoWithRequestId.getRequestId())) {
+                throw new ObjectNotFoundException("Ошибка запроса предмета. Запрос с id = "
+                        + itemDtoWithRequestId.getRequestId() + " не существует.");
+            }
         }
     }
 
     private void validateUser(Integer userId) {
         if (!userRepository.existsById(userId)) {
             throw new ObjectNotFoundException("Ошибка запроса бронирования. Пользователь с id = " + userId + " не существует.");
-        }
-    }
-
-    private void validateItem(Integer itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new ObjectNotFoundException("Ошибка запроса бронирования. Предмет с id = " + itemId + " не существует.");
         }
     }
 }

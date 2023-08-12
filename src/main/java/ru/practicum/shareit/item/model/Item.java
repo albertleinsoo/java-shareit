@@ -1,29 +1,30 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.*;
-import org.hibernate.Hibernate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import java.util.Objects;
 
 @Entity
 @Table(name = "items")
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Item {
     @Id
     @Positive
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Название предмета не может быть пустым.")
+    @NotNull(message = "Item name can't be null.")
     @Length(max = 255)
     private String name;
 
@@ -39,23 +40,14 @@ public class Item {
     @JoinColumn(name = "owner_id")
     private User owner;
 
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private Request request;
+
     public Item(Integer id, String name, String description, Boolean available) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.available = available;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Item item = (Item) o;
-        return getId() != null && Objects.equals(getId(), item.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
     }
 }
