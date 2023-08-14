@@ -1,7 +1,6 @@
 package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestDtoInput;
@@ -19,26 +18,26 @@ public class RequestController {
     private final RequestService requestService;
 
     @PostMapping
-    public ResponseEntity<RequestDtoShortOutput> add(@RequestBody RequestDtoInput requestDtoInput,
+    public RequestDtoShortOutput add(@RequestBody RequestDtoInput requestDtoInput,
                                                      @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return ResponseEntity.ok().body(requestService.add(requestDtoInput, userId));
+        return requestService.add(requestDtoInput, userId);
     }
 
     @GetMapping
-    public ResponseEntity<List<RequestDto>> getByUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return ResponseEntity.ok().body(requestService.getByUser(userId));
+    public List<RequestDto> getByUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return requestService.getByUser(userId);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<RequestDto>> getAll(@RequestParam(name = "from", required = false) Integer from,
+    public List<RequestDto> getAll(@RequestParam(name = "from", required = false) Integer from,
                                                          @RequestParam(name = "size", required = false) Integer size,
                                                          @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return ResponseEntity.ok().body(requestService.getAll(from, size, userId));
+        return requestService.getAll(from, size, userId);
     }
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<RequestDtoOutput> get(@PathVariable Integer requestId,
+    public RequestDtoOutput get(@PathVariable Integer requestId,
                                                 @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return ResponseEntity.ok().body(requestService.get(requestId, userId));
+        return requestService.get(requestId, userId);
     }
 }

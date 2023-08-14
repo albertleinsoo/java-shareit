@@ -2,8 +2,6 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -11,7 +9,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 
-@Controller
+@RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Slf4j
@@ -21,7 +19,7 @@ public class UserController {
     private final UserClient userClient;
 
     @PostMapping
-    public ResponseEntity<Object> add(@RequestBody @Valid UserDto userDto) {
+    public Object add(@RequestBody @Valid UserDto userDto) {
 
         log.info("Add user with userDto={}", userDto);
 
@@ -29,7 +27,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Object> update(@PathVariable @Positive int userId,
+    public Object update(@PathVariable @Positive int userId,
                                          @RequestBody @Valid UserDto userDto) {
 
         log.info("Update user with userId={}, userDto={}", userId, userDto);
@@ -38,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Object> get(@PathVariable @Positive int userId) {
+    public Object get(@PathVariable @Positive int userId) {
 
         log.info("Get user by userId={}", userId);
 
@@ -46,7 +44,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Object> delete(@PathVariable @Positive int userId) {
+    public Object delete(@PathVariable @Positive int userId) {
 
         log.info("Delete user by userId={}", userId);
 
@@ -54,7 +52,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getAll() {
+    public Object getAll() {
 
         log.info("Get all users");
 

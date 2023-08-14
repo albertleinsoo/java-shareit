@@ -2,8 +2,6 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.RequestDto;
@@ -11,8 +9,9 @@ import ru.practicum.shareit.request.dto.RequestDto;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
-@Controller
+@RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
 @Slf4j
@@ -22,7 +21,7 @@ public class RequestController {
     private final RequestClient requestClient;
 
     @PostMapping
-    public ResponseEntity<Object> add(@RequestHeader("X-Sharer-User-Id") @NotNull Integer userId,
+    public Object add(@RequestHeader("X-Sharer-User-Id") @NotNull Integer userId,
                                       @Valid @RequestBody RequestDto requestDto) {
 
         log.info("Add request with userId={}, requestDto={}", userId, requestDto);
@@ -31,7 +30,7 @@ public class RequestController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getByUser(@RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
+    public Object getByUser(@RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
 
         log.info("Get requests by userId={}", userId);
 
@@ -39,15 +38,9 @@ public class RequestController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Object> getAll(@RequestParam(name = "from", required = false) Integer from,
-                                         @RequestParam(name = "size", required = false) Integer size,
+    public Object getAll(@RequestParam(name = "from", required = false) @PositiveOrZero Integer from,
+                                         @RequestParam(name = "size", required = false) @Positive Integer size,
                                          @RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
-
-        if (from != null && size != null) {
-            if (size <= 0 || from < 0) {
-                throw new RuntimeException("Incorrect 'from' and 'size' pagination parameter values.");
-            }
-        }
 
         log.info("Get all requests by userId={}, from={}, size={}", userId, from, size);
 
@@ -55,7 +48,7 @@ public class RequestController {
     }
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<Object> get(@PathVariable @NotNull @Positive Integer requestId,
+    public Object get(@PathVariable @NotNull @Positive Integer requestId,
                                       @RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
 
         log.info("Get request by requestId={}, userId={}", requestId, userId);

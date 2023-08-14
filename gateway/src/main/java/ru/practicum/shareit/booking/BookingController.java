@@ -2,8 +2,6 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -13,8 +11,9 @@ import ru.practicum.shareit.exceptions.IllegalSearchModeException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
-@Controller
+@RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Slf4j
@@ -23,14 +22,10 @@ public class BookingController {
     private final BookingClient bookingClient;
 
     @GetMapping
-    public ResponseEntity<Object> getAll(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public Object getAll(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                          @RequestParam(name = "state", defaultValue = "ALL") String searchMode,
-                                         @RequestParam(name = "from", required = false) Integer from,
-                                         @RequestParam(name = "size", required = false) Integer size) {
-
-        if ((from != null && from <= 0) || (size != null && size <= 0)) {
-            throw new IllegalArgumentException("Failed to process request. Incorrect pagination parameters.");
-        }
+                                         @RequestParam(name = "from", required = false) @Positive Integer from,
+                                         @RequestParam(name = "size", required = false) @Positive Integer size) {
 
         if (from == null) {
             from = 0;
@@ -54,7 +49,7 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> add(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public Object add(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                       @RequestBody @Valid BookingDto requestDto) {
 
         log.info("Creating booking {}, userId={}", requestDto, userId);
@@ -63,7 +58,7 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public ResponseEntity<Object> get(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public Object get(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                       @PathVariable Integer bookingId) {
 
         log.info("Get bookingId={}, userId={}", bookingId, userId);
@@ -72,7 +67,7 @@ public class BookingController {
     }
 
     @PatchMapping("/{bookingId}")
-    public ResponseEntity<Object> setApprove(@PathVariable Integer bookingId,
+    public Object setApprove(@PathVariable Integer bookingId,
                                              @RequestHeader("X-Sharer-User-Id") @NotNull Integer ownerId,
                                              @RequestParam("approved") @NotNull Boolean approved) {
 
@@ -82,8 +77,8 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
-    public ResponseEntity<Object> getAllByOwner(@RequestParam(name = "state", defaultValue = "ALL", required = false) String searchMode,
-                                                @RequestParam(name = "from", required = false) @Positive Integer from,
+    public Object getAllByOwner(@RequestParam(name = "state", defaultValue = "ALL", required = false) String searchMode,
+                                                @RequestParam(name = "from", required = false) @PositiveOrZero Integer from,
                                                 @RequestParam(name = "size", required = false) @Positive Integer size,
                                                 @RequestHeader("X-Sharer-User-Id") @NotNull Integer userId) {
 
